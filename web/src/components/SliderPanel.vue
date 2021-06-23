@@ -11,16 +11,19 @@
         <tr v-for="token in tokens" v-bind:key="token.name">
           <td>{{ token.name }}</td>
           <td>
-              <div class="d-flex flex-column align-items-center">
-                <InputText v-model="token.value.value" />
-                <Slider v-model="token.value.value" />
+            <div class="d-flex flex-column align-items-center">
+              <InputText v-model="token.value.value" />
+              <Slider v-model="token.value.value" />
             </div>
           </td>
         </tr>
         <tr>
-            <td>TOTAL</td>
-            <td class="text-center">{{ total.toFixed(1) }} <button class="ms-2 btn btn-primary" @click="normalize">Make 100%</button></td>
-            </tr>
+          <td>TOTAL</td>
+          <td class="text-center">
+            {{ total.toFixed(1) }}
+            <button class="ms-2 btn btn-primary" @click="normalize">Make 100%</button>
+          </td>
+        </tr>
       </tbody>
     </table>
   </div>
@@ -47,25 +50,25 @@ export default defineComponent({
     for (let token of props.tokenNames) {
       tokens.push({ name: token, value: ref(0.0) });
     }
-    const total = computed(() => { 
-        var value = 0.0;
-        for (let token of tokens) {
-            value += token.value.value;
-        }
-        return value;
+    const total = computed(() => {
+      var value = 0.0;
+      for (let token of tokens) {
+        value += token.value.value;
+      }
+      return value;
     });
     const normalize = () => {
-        const current = total.value;
-        if (current <= 0) {
-            // TODO: add toast system
-            alert(`Can't normalize when all sliders are 0`);
-        } else {
-            for (let token of tokens) {
-                const newValue = token.value.value * 100.0 / current;
-                // Round to one decimal                
-                token.value.value = Math.round(newValue * 10) / 10.0;
-            }
+      const current = total.value;
+      if (current <= 0) {
+        // TODO: add toast system
+        alert(`Can't normalize when all sliders are 0`);
+      } else {
+        for (let token of tokens) {
+          const newValue = (token.value.value * 100.0) / current;
+          // Round to one decimal
+          token.value.value = Math.round(newValue * 10) / 10.0;
         }
+      }
     };
     return { tokens, total, normalize };
   },

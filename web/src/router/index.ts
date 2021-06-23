@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 import Home from '../views/Home.vue';
+import EnzymeSliders from '../views/EnzymeSliders.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -11,6 +12,11 @@ const routes: Array<RouteRecordRaw> = [
     path: '/sliders',
     name: 'Sliders',
     component: () => import(/* webpackChunkName: "sliders" */ '../views/ConstantStrategy.vue'),
+  },
+  {
+    path: '/enzyme_sliders',
+    name: 'EnzymeSliders',
+    component: EnzymeSliders,
   },
 ];
 

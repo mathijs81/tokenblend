@@ -1,9 +1,7 @@
 <template>
   <div class="hello">
     <h1>Money Bot</h1>
-    <p>
-      Welcome to the money bot
-    </p>
+    <p>Welcome to the money bot</p>
   </div>
 </template>
 
