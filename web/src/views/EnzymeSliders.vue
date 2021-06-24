@@ -1,7 +1,9 @@
 <template>
-  <h3>All Enzyme assets</h3>
   <div>
-    <SliderPanel :tokenNames="tokens" />
+    <h3>All Enzyme assets</h3>
+    <div>
+      <SliderPanel :tokenNames="tokens" />
+    </div>
   </div>
 </template>
 

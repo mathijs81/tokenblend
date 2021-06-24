@@ -30,7 +30,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, Ref, computed } from 'vue';
+import { defineComponent, PropType, ref, Ref, computed, watchEffect } from 'vue';
 
 interface TokenAndValue {
   name: string;
@@ -47,9 +47,15 @@ export default defineComponent({
   },
   setup(props) {
     const tokens: TokenAndValue[] = [];
-    for (let token of props.tokenNames) {
-      tokens.push({ name: token, value: ref(0.0) });
-    }
+
+    watchEffect(() => {
+      tokens.length = 0;
+      if (props.tokenNames) {
+        for (let token of props.tokenNames) {
+          tokens.push({ name: token, value: ref(0.0) });
+        }
+      }
+    });
     const total = computed(() => {
       var value = 0.0;
       for (let token of tokens) {
