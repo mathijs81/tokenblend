@@ -1,6 +1,7 @@
 lockfileVersion: 5.3
 
 specifiers:
+  '@enzymefinance/protocol': ^2.0.7
   '@graphql-codegen/cli': ^1.21.5
   '@graphql-codegen/typescript-graphql-request': ^3.2.3
   '@graphql-codegen/typescript-operations': ^1.18.2
@@ -35,6 +36,7 @@ specifiers:
   vue-router: ^4.0.0-0
 
 dependencies:
+  '@enzymefinance/protocol': 2.0.7
   '@metamask/detect-provider': 1.2.0
   '@vueuse/core': 5.0.3_vue@3.1.1
   bootstrap: 5.0.1
@@ -1245,7 +1247,6 @@ packages:
     engines: {node: '>=6.9.0'}
     dependencies:
       regenerator-runtime: 0.13.7
-    dev: true
 
   /@babel/template/7.14.5:
     resolution: {integrity: sha512-6Z3Po85sfxRGachLULUhOmvAaOo7xCvqGQtxINai2mEGPFm6pQ4z5QInFnUrRpfoSV60BnjyF5F3c+15fxFV1g==}
@@ -1318,6 +1319,30 @@ packages:
     transitivePeerDependencies:
       - typescript
     dev: true
+
+  /@enzymefinance/ethers/0.0.7:
+    resolution: {integrity: sha512-h6Qm02r7YA8dTLd6p0+0m1J9rgKzgq2Q0D3K4zz3OUPo8/q33YjJ6IblhU9WVdkP1DLtbRa8ogRva7JAlUH2NA==}
+    dependencies:
+      '@babel/runtime': 7.14.6
+      '@ethersproject/abi': 5.3.1
+      ethers: 5.3.1
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: false
+
+  /@enzymefinance/protocol/2.0.7:
+    resolution: {integrity: sha512-Fx1Y+0F+okdYJ8k4/97bCFr10l5KhCiUKWmGyc1e2Iznx/13UWy06AKreiE06YObGAE7ICgPnVcLH1AF2XGcxw==}
+    dependencies:
+      '@babel/runtime': 7.14.6
+      '@enzymefinance/ethers': 0.0.7
+      decimal.js: 10.3.0
+      ethers: 5.3.1
+      ethers-eip712: 0.2.0_ethers@5.3.1
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: false
 
   /@ethersproject/abi/5.3.1:
     resolution: {integrity: sha512-F98FWTJG7nWWAQ4DcV6R0cSlrj67MWK3ylahuFbzkumem5cLWg1p7fZ3vIdRoS1c7TEf55Lvyx0w7ICR47IImw==}
@@ -4912,6 +4937,10 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
+  /decimal.js/10.3.0:
+    resolution: {integrity: sha512-MrQRs2gyD//7NeHi9TtsfClkf+cFAewDz+PZHR8ILKglLmBMyVX3ymQ+oeznE3tjrS7beTN+6JXb2C3JDHm7ug==}
+    dev: false
+
   /decode-uri-component/0.2.0:
     resolution: {integrity: sha1-6zkTMzRYd1y4TNGh+uBiEGu4dUU=}
     engines: {node: '>=0.10'}
@@ -5565,6 +5594,14 @@ packages:
     resolution: {integrity: sha1-Qa4u62XvpiJorr/qg6x9eSmbCIc=}
     engines: {node: '>= 0.6'}
     dev: true
+
+  /ethers-eip712/0.2.0_ethers@5.3.1:
+    resolution: {integrity: sha512-fgS196gCIXeiLwhsWycJJuxI9nL/AoUPGSQ+yvd+8wdWR+43G+J1n69LmWVWvAON0M6qNaf2BF4/M159U8fujQ==}
+    peerDependencies:
+      ethers: ^4.0.47 || ^5.0.8
+    dependencies:
+      ethers: 5.3.1
+    dev: false
 
   /ethers/5.3.1:
     resolution: {integrity: sha512-xCKmC0gsZ9gks89ZfK3B1y6LlPdvX5fxDtu9SytnpdDJR1M7pmJI+4H0AxQPMgUYr7GtQdmECLR0gWdJQ+lZYw==}
@@ -9791,7 +9828,6 @@ packages:
 
   /regenerator-runtime/0.13.7:
     resolution: {integrity: sha512-a54FxoJDIr27pgf7IgeQGxmqUNYrcV338lf/6gH456HZ/PhX+5BcwHXG9ajESmwe6WRO0tAzRUrRmNONWgkrew==}
-    dev: true
 
   /regenerator-transform/0.14.5:
     resolution: {integrity: sha512-eOf6vka5IO151Jfsw2NO9WpGX58W6wWmefK3I1zEGr0lOD0u8rwPaNqQL1aRxUaxLeKO3ArNh3VYg1KbaD+FFw==}

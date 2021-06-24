@@ -3,7 +3,7 @@ import detectEthereumProvider from '@metamask/detect-provider';
 import { reactive, readonly } from '@vue/reactivity';
 import { ethers, utils } from 'ethers';
 
-type Provider = ethers.providers.Web3Provider;
+export type Provider = ethers.providers.Web3Provider;
 
 async function getProvider(): Promise<Provider> {
   const ethProvider = (await detectEthereumProvider({
@@ -58,6 +58,10 @@ class Web3Service {
   }) as Web3Status;
   private copy = readonly(this.state);
   private intervalHandler?: number;
+
+  public getProvider(): Provider {
+    return this.provider!;
+  }
 
   public status(): Web3Status {
     return this.copy;
