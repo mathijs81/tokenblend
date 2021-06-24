@@ -3,6 +3,7 @@
 ## Project setup
 ```
 pnpm install
+pnpm codegen
 ```
 
 ### Compiles and hot-reloads for development

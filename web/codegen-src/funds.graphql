@@ -1,0 +1,6 @@
+query funds($id: String!) {
+  funds(where: { manager: $id }) {
+    id
+    name
+  }
+}

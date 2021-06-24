@@ -1,0 +1,8 @@
+schema: https://api.thegraph.com/subgraphs/name/enzymefinance/enzyme
+documents: codegen-src/*.graphql
+generates:
+  src/data/subgraph.ts:
+    plugins:
+      - typescript
+      - typescript-operations
+      - typescript-graphql-request
