@@ -60,7 +60,10 @@ class Web3Service {
   private intervalHandler?: number;
 
   public getProvider(): Provider {
-    return this.provider!;
+    if (!this.provider) {
+      throw 'Provider not initialized';
+    }
+    return this.provider;
   }
 
   public status(): Web3Status {

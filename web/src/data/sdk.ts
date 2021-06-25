@@ -1,6 +1,6 @@
 import { GraphQLClient } from 'graphql-request';
-import { getSdk } from './subgraph';
+import { getSdk, Sdk } from './subgraph';
 
-export function gql(endpoint: string) {
+export function gql(endpoint: string): Sdk {
   return getSdk(new GraphQLClient(endpoint));
 }
