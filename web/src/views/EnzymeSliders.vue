@@ -18,7 +18,7 @@
     <div>{{ extraText }}</div>
     <h3>All Enzyme assets</h3>
     <div>
-      <SliderPanel :tokens="tokens" />
+      <SliderPanel :tokenData="tokens" />
     </div>
   </div>
 </template>
