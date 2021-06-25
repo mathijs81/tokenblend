@@ -1,6 +1,7 @@
 export interface TokenData {
   id: string;
   name: string;
+  decimals: number;
   ownedAmount: number;
   value: number;
 }

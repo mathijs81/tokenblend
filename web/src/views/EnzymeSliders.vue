@@ -15,10 +15,10 @@
       </div>
       <div v-else>{{ state.address }} has no enzyme funds</div>
     </div>
-    <div>{{ extraText }}</div>
     <h3>All Enzyme assets</h3>
+    {{ distributionText }}
     <div>
-      <SliderPanel :tokenData="tokens" />
+      <SliderPanel :tokenData="tokens" v-model="distribution" />
     </div>
   </div>
 </template>
@@ -31,10 +31,13 @@ import { asyncComputed } from '@vueuse/core';
 import { web3Service, Provider } from '@/web3/web3Service';
 import { enzymeService, Fund } from '@/web3/enzymeService';
 import { StandardToken, VaultLib } from '@enzymefinance/protocol';
-import { BigNumber } from 'ethers';
-import { TokenData } from '@/util/tokens';
+import { BigNumber, FixedNumber } from 'ethers';
+import { calcPercentageMap, TokenData } from '@/util/tokens';
 
-async function trackAssets(address: string, provider: Provider): Promise<string> {
+async function trackAssets(
+  address: string,
+  provider: Provider
+): Promise<Record<string, BigNumber>> {
   const lib = new VaultLib(address, web3Service.getProvider());
   const holdings = await lib.getTrackedAssets();
   const tokenMap: Record<string, BigNumber> = {};
@@ -44,11 +47,10 @@ async function trackAssets(address: string, provider: Provider): Promise<string>
       return tokenContract.balanceOf
         .args(address)
         .call()
-        .then((value) => (tokenMap[token] = value));
+        .then((value) => (tokenMap[token.toLowerCase()] = value));
     })
   );
-
-  return JSON.stringify(tokenMap);
+  return tokenMap;
 }
 
 export default defineComponent({
@@ -62,54 +64,74 @@ export default defineComponent({
         // not sure why, the bot example code also filters for this
         .filter((asset) => !asset.derivativeType)
         .map((asset) => ({
-          id: asset.id,
+          id: asset.id.toLowerCase(),
           name: asset.name,
           value: asset.price?.price ?? -1,
-          ownedAmount: Math.random(),
+          ownedAmount: 0.0,
+          decimals: asset.decimals,
         }));
       return namesOnly;
     });
 
-    const tokens: Ref<TokenData[]> = computed(() => {
-      if (partialTokens.value) {
-        return partialTokens.value.map((partialToken) => {
-          let value = partialToken.value;
-          if (value < 0) {
-            // TODO: look up value on uniswap
-            value = 1.0;
-          }
-          // TODO: look up actual owned amount
-          let owned = Math.random();
-          return {
-            id: partialToken.id,
-            name: partialToken.name,
-            ownedAmount: owned,
-            value: value,
-          };
-        });
-      } else {
-        return [];
-      }
-    });
+    const tokens: Ref<TokenData[]> = ref([]);
+    const distribution: Ref<Record<string, number>> = ref({});
+    const startingDistribution: Ref<Record<string, number>> = ref({});
 
     const funds = computed(() => enzymeService.getFunds());
     const selectFund = (fund: Fund) => enzymeService.selectFund(fund);
     const extraText = ref('');
 
-    watchEffect(() => {
+    watchEffect(async () => {
       const fund = enzymeService.status().selectedFund;
-      if (fund) {
-        trackAssets(fund.id, web3Service.getProvider()).then((msg) => (extraText.value = msg));
+      const tokenList = partialTokens.value;
+      if (tokenList) {
+        if (fund) {
+          const assetMap = await trackAssets(fund.id, web3Service.getProvider());
+
+          tokens.value = tokenList.map((token) => {
+            let value = token.value;
+            if (value < 0) {
+              // TODO: look up value on uniswap
+              value = 1.0;
+            }
+            let owned = 0.0;
+            const ownedBigNumber = assetMap[token.id];
+            if (ownedBigNumber) {
+              owned = FixedNumber.fromValue(ownedBigNumber, token.decimals).toUnsafeFloat();
+            }
+            return {
+              ...token,
+              ownedAmount: owned,
+              value: value,
+            };
+          });
+          distribution.value = calcPercentageMap(tokens.value);
+          startingDistribution.value = Object.assign({}, distribution.value);
+        } else {
+          tokens.value = tokenList;
+        }
       }
+    });
+
+    const distributionText = computed(() => {
+      let msg = '';
+      Object.entries(distribution.value).forEach((entry) => {
+        const original = startingDistribution.value[entry[0]] ?? 0.0;
+        if (entry[1] != original) {
+          msg += `${entry[0]}: change ${entry[1] - original}\n`;
+        }
+      });
+      return msg;
     });
 
     return {
       tokens,
+      distribution,
       funds,
       state: web3Service.status(),
       selectFund,
       enzymeState: enzymeService.status(),
-      extraText,
+      distributionText,
     };
   },
   components: { SliderPanel },

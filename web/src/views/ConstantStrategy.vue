@@ -13,9 +13,9 @@ export default defineComponent({
   name: 'ConstantStrategy',
   setup() {
     const tokens: TokenData[] = [
-      { name: 'WETH', id: '0xh687943gjas', ownedAmount: 2.0, value: 2000 },
-      { name: 'USDC', id: '0xaskdfjasdf', ownedAmount: 500, value: 1.0 },
-      { name: 'WBTC', id: '0xjaksdfasdf', ownedAmount: 0.05, value: 40000 },
+      { name: 'WETH', id: '0xh687943gjas', decimals: 8, ownedAmount: 2.0, value: 2000 },
+      { name: 'USDC', id: '0xaskdfjasdf', decimals: 8, ownedAmount: 500, value: 1.0 },
+      { name: 'WBTC', id: '0xjaksdfasdf', decimals: 8, ownedAmount: 0.05, value: 40000 },
     ];
     const distribution: Record<string, number> = calcPercentageMap(tokens);
     return { tokens, distribution };

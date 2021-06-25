@@ -34,8 +34,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, Ref, computed, watchEffect, reactive } from 'vue';
-import { TokenData, calcPercentageMap } from '@/util/tokens';
+import { calcPercentageMap, TokenData } from '@/util/tokens';
+import { computed, defineComponent, PropType, reactive, watch } from 'vue';
 
 export default defineComponent({
   name: 'SliderPanel',
@@ -46,20 +46,25 @@ export default defineComponent({
     },
     modelValue: Object as PropType<Record<string, number>>,
   },
-  setup(props) {
+  setup(props, {emit}) {
     const percentageMap: Record<string, number> = reactive({});
-    if (props.modelValue) {
-      for (let [id, value] of Object.entries(props.modelValue)) {
-        percentageMap[id] = value;
-      }
-      for (let id of Object.keys(props.tokenData)) {
-        if (id! in percentageMap) {
-          percentageMap[id] = 0.0;
+    watch(
+      () => [props.tokenData, props.modelValue],
+      () => {
+        if (props.modelValue) {
+          for (let [id, value] of Object.entries(props.modelValue)) {
+            percentageMap[id] = value;
+          }
+        } else {
+          Object.assign(percentageMap, calcPercentageMap(props.tokenData));
+        }
+        for (let [_, token] of Object.entries(props.tokenData)) {
+          if (!(token.id in percentageMap)) {
+            percentageMap[token.id] = 0.0;
+          }
         }
       }
-    } else {
-      Object.assign(percentageMap, calcPercentageMap(props.tokenData));
-    }
+    );
 
     const totalPercentage = computed(() => {
       var value = 0.0;
@@ -81,6 +86,10 @@ export default defineComponent({
         }
       }
     };
+
+    watch(percentageMap, () => {
+      emit('update:modelValue', percentageMap);
+    })
 
     return { percentageMap, totalPercentage, normalize };
   },
