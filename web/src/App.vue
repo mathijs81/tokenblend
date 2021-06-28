@@ -5,7 +5,8 @@
     </div>
     <div class="text-center">
       <router-link to="/">Home</router-link> | <router-link to="/sliders">Sliders</router-link> |
-      <router-link to="/enzyme_sliders">Enzyme sliders</router-link>
+      <router-link to="/enzyme_sliders">Enzyme sliders</router-link> |
+       <router-link to="/uniswap">Uniswap</router-link>
     </div>
     <router-view />
   </div>

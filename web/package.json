@@ -20,6 +20,7 @@
     "graphql-tag": "^2.12.4",
     "primeicons": "^4.1.0",
     "primevue": "^3.5.1",
+    "simple-uniswap-sdk": "^2.3.3",
     "vue": "^3.1.1",
     "vue-router": "^4.0.0-0"
   },

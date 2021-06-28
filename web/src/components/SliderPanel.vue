@@ -80,7 +80,7 @@ export default defineComponent({
 
     const totalPercentage = computed(() => {
       var value = 0.0;
-      for (let [_, itemValue] of Object.entries(percentageMap)) {
+      for (let [, itemValue] of Object.entries(percentageMap)) {
         value += itemValue;
       }
       return value;

@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 import Home from '../views/Home.vue';
 import EnzymeSliders from '../views/EnzymeSliders.vue';
+import Uniswap from '../views/Uniswap.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -17,6 +18,11 @@ const routes: Array<RouteRecordRaw> = [
     path: '/enzyme_sliders',
     name: 'EnzymeSliders',
     component: EnzymeSliders,
+  },
+  {
+    path: '/uniswap',
+    name: 'Uniswap',
+    component: Uniswap,
   },
 ];
 
