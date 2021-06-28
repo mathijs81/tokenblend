@@ -1,6 +1,6 @@
 <template>
   <div>
-    <table class="table table-striped">
+    <table class="table table-striped table-sm">
       <thead>
         <tr>
           <th scope="col">Token</th>
@@ -10,6 +10,16 @@
         </tr>
       </thead>
       <tbody>
+        <tr>
+          <td>Total</td>
+          <td></td>
+          <td></td>
+          <td class="text-center">
+            {{ totalPercentage.toFixed(1) }}
+            <button class="ms-2 btn btn-primary" @click="normalize">Make 100%</button>
+          </td>
+        </tr>
+
         <tr v-for="token in tokenData" v-bind:key="token.name">
           <td>{{ token.name }}</td>
           <td>{{ token.ownedAmount }}</td>
@@ -22,7 +32,9 @@
           </td>
         </tr>
         <tr>
-          <td>TOTAL</td>
+          <td>Total</td>
+          <td></td>
+          <td></td>
           <td class="text-center">
             {{ totalPercentage.toFixed(1) }}
             <button class="ms-2 btn btn-primary" @click="normalize">Make 100%</button>
@@ -46,7 +58,7 @@ export default defineComponent({
     },
     modelValue: Object as PropType<Record<string, number>>,
   },
-  setup(props, {emit}) {
+  setup(props, { emit }) {
     const percentageMap: Record<string, number> = reactive({});
     watch(
       () => [props.tokenData, props.modelValue],
@@ -89,7 +101,7 @@ export default defineComponent({
 
     watch(percentageMap, () => {
       emit('update:modelValue', percentageMap);
-    })
+    });
 
     return { percentageMap, totalPercentage, normalize };
   },
@@ -98,9 +110,11 @@ export default defineComponent({
 <style scoped>
 .p-inputtext {
   width: 14rem;
+  padding: 0.2rem;
+  font-size: 0.8rem;
 }
 .p-slider-horizontal {
   width: 14rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.1rem;
 }
 </style>

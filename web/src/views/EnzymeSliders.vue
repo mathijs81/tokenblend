@@ -17,9 +17,16 @@
     </div>
     <h3>All Enzyme assets</h3>
     {{ distributionText }}
+    <button class="btn btn-primary" @click="plan">Plan orders</button>
     <div>
       <SliderPanel :tokenData="tokens" v-model="distribution" />
     </div>
+    <Dialog header="Order plan" v-model:visible="displayPlan">
+      <div v-for="order in orderPlan" v-bind:key="order.sendAmount + order.fromToken.name">
+        Sell {{ order.sendAmount.toString() }} {{ order.fromToken.name }} =>
+        {{ order.toToken.name }}
+      </div>
+    </Dialog>
   </div>
 </template>
 
@@ -33,6 +40,7 @@ import { enzymeService, Fund } from '@/web3/enzymeService';
 import { StandardToken, VaultLib } from '@enzymefinance/protocol';
 import { BigNumber, FixedNumber } from 'ethers';
 import { calcPercentageMap, TokenData } from '@/util/tokens';
+import { defaultOrderPlanner, PlannedOrder } from '@/orderplan/orderplan';
 
 async function trackAssets(
   address: string,
@@ -79,7 +87,6 @@ export default defineComponent({
 
     const funds = computed(() => enzymeService.getFunds());
     const selectFund = (fund: Fund) => enzymeService.selectFund(fund);
-    const extraText = ref('');
 
     watchEffect(async () => {
       const fund = enzymeService.status().selectedFund;
@@ -114,15 +121,29 @@ export default defineComponent({
     });
 
     const distributionText = computed(() => {
-      let msg = '';
+      let valueChange = 0.0;
+      let tokensChanged = 0;
+      let tokensTotal = 0;
       Object.entries(distribution.value).forEach((entry) => {
         const original = startingDistribution.value[entry[0]] ?? 0.0;
-        if (entry[1] != original) {
-          msg += `${entry[0]}: change ${entry[1] - original}\n`;
+        if (entry[1] > 0 || original > 0) {
+          valueChange += Math.abs(entry[1] - original);
+          tokensTotal++;
+          if (entry[1] != original) {
+            tokensChanged++;
+          }
         }
       });
-      return msg;
+      return `${tokensChanged} / ${tokensTotal} changed, ${valueChange} % total portfolio adjustment.`;
     });
+
+    const displayPlan = ref(false);
+    const orderPlan: Ref<PlannedOrder[]> = ref([]);
+
+    const plan = () => {
+      orderPlan.value = defaultOrderPlanner.createPlan(tokens.value, distribution.value);
+      displayPlan.value = true;
+    };
 
     return {
       tokens,
@@ -132,6 +153,9 @@ export default defineComponent({
       selectFund,
       enzymeState: enzymeService.status(),
       distributionText,
+      plan,
+      displayPlan,
+      orderPlan,
     };
   },
   components: { SliderPanel },
