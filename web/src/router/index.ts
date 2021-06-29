@@ -28,7 +28,7 @@ const routes: Array<RouteRecordRaw> = [
     path: '/FarmingStrategy',
     name: 'FarmingStrategy',
     component: FarmingStrategy,
-  }
+  },
   {
     path: '/uniswap',
     name: 'Uniswap',
