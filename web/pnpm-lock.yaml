@@ -18,6 +18,7 @@ specifiers:
   '@vue/eslint-config-prettier': ^6.0.0
   '@vue/eslint-config-typescript': ^7.0.0
   '@vueuse/core': ^5.0.3
+  axios: ^0.21.1
   bootstrap: ^5.0.1
   core-js: ^3.6.5
   eslint: ^6.7.2
@@ -41,6 +42,7 @@ dependencies:
   '@enzymefinance/protocol': 2.0.7
   '@metamask/detect-provider': 1.2.0
   '@vueuse/core': 5.0.3_vue@3.1.1
+  axios: 0.21.1
   bootstrap: 5.0.1
   core-js: 3.15.0
   ethers: 5.3.1
@@ -3845,6 +3847,14 @@ packages:
     resolution: {integrity: sha512-xh1Rl34h6Fi1DC2WWKfxUTVqRsNnr6LsKz2+hfwDxQJWmrx8+c7ylaqBMcHfl1U1r2dsifOvKX3LQuLNZ+XSvA==}
     dev: true
 
+  /axios/0.21.1:
+    resolution: {integrity: sha512-dKQiRHxGD9PPRIUNIWvZhPTPpl1rf/OxTYKsqKUDjBwYylTvV7SjSHJb9ratfyzM6wCdLCOYLzs73qpg5c4iGA==}
+    dependencies:
+      follow-redirects: 1.14.1
+    transitivePeerDependencies:
+      - debug
+    dev: false
+
   /babel-code-frame/6.26.0:
     resolution: {integrity: sha1-Y/1D99weO7fONZR9uP42mj9Yx0s=}
     dependencies:
@@ -6465,7 +6475,7 @@ packages:
       readable-stream: 2.3.7
     dev: true
 
-  /follow-redirects/1.14.1_debug@4.3.1:
+  /follow-redirects/1.14.1:
     resolution: {integrity: sha512-HWqDgT7ZEkqRzBvc2s64vSZ/hfOceEol3ac/7tKwzuvEyWx3/4UegXh5oBOIotkGsObyk3xznnSRVADBgWSQVg==}
     engines: {node: '>=4.0'}
     peerDependencies:
@@ -6473,9 +6483,6 @@ packages:
     peerDependenciesMeta:
       debug:
         optional: true
-    dependencies:
-      debug: 4.3.1
-    dev: true
 
   /for-in/1.0.2:
     resolution: {integrity: sha1-gQaNKVqBQuwKxybG4iAMMPttXoA=}
@@ -7229,7 +7236,7 @@ packages:
     engines: {node: '>=8.0.0'}
     dependencies:
       eventemitter3: 4.0.7
-      follow-redirects: 1.14.1_debug@4.3.1
+      follow-redirects: 1.14.1
       requires-port: 1.0.0
     transitivePeerDependencies:
       - debug
