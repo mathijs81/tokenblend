@@ -1,7 +1,11 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 import Home from '../views/Home.vue';
 import EnzymeSliders from '../views/EnzymeSliders.vue';
+
 import FarmingStrategy from '../views/FarmingStrategy.vue';
+
+import Uniswap from '../views/Uniswap.vue';
+
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -20,10 +24,17 @@ const routes: Array<RouteRecordRaw> = [
     component: EnzymeSliders,
   },
   {
+
     path: '/FarmingStrategy',
     name: 'FarmingStrategy',
     component: FarmingStrategy,
   }
+
+    path: '/uniswap',
+    name: 'Uniswap',
+    component: Uniswap,
+  },
+
 ];
 
 const router = createRouter({

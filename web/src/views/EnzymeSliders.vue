@@ -17,22 +17,40 @@
     </div>
     <h3>All Enzyme assets</h3>
     {{ distributionText }}
+    <button class="btn btn-primary" @click="plan">Plan orders</button>
     <div>
       <SliderPanel :tokenData="tokens" v-model="distribution" />
     </div>
+    <Dialog header="Order plan" v-model:visible="displayPlan">
+      <div
+        v-for="order in orderPlan"
+        v-bind:key="order.sendAmount + order.fromToken.name"
+        class="row"
+      >
+        <div class="col-9">
+          {{ order.sendAmount.toString() }} {{ order.fromToken.name }} =>
+          {{ order.toToken.name }}
+        </div>
+        <div class="col-3">
+          <button class="btn btn-primary" @click="execute(order)">Execute</button>
+        </div>
+      </div>
+    </Dialog>
   </div>
 </template>
 
 <script lang="ts">
 import SliderPanel from '@/components/SliderPanel.vue';
 import { getTokens } from '@/data/enzymegraph';
-import { computed, defineComponent, Ref, ref, watchEffect } from 'vue';
-import { asyncComputed } from '@vueuse/core';
-import { web3Service, Provider } from '@/web3/web3Service';
-import { enzymeService, Fund } from '@/web3/enzymeService';
-import { StandardToken, VaultLib } from '@enzymefinance/protocol';
-import { BigNumber, FixedNumber } from 'ethers';
+import { defaultOrderPlanner, PlannedOrder } from '@/orderplan/orderplan';
 import { calcPercentageMap, TokenData } from '@/util/tokens';
+import { enzymeService, Fund } from '@/web3/enzymeService';
+import { uniswapService } from '@/web3/uniswapService';
+import { Provider, web3Service } from '@/web3/web3Service';
+import { StandardToken, VaultLib } from '@enzymefinance/protocol';
+import { asyncComputed } from '@vueuse/core';
+import { BigNumber, FixedNumber } from 'ethers';
+import { computed, defineComponent, Ref, ref, watchEffect } from 'vue';
 
 async function trackAssets(
   address: string,
@@ -59,7 +77,7 @@ export default defineComponent({
     // TODO: if we keep using this, add a filtering textbox to quickly filter on substring of names as
     // there are very many tokens listed.
     const partialTokens: Ref<TokenData[]> = asyncComputed(async () => {
-      const tokenRequestResult = await getTokens(web3Service.isProd());
+      const tokenRequestResult = await getTokens(web3Service.isMainnet());
       const namesOnly: TokenData[] = tokenRequestResult.assets
         // not sure why, the bot example code also filters for this
         .filter((asset) => !asset.derivativeType)
@@ -79,7 +97,6 @@ export default defineComponent({
 
     const funds = computed(() => enzymeService.getFunds());
     const selectFund = (fund: Fund) => enzymeService.selectFund(fund);
-    const extraText = ref('');
 
     watchEffect(async () => {
       const fund = enzymeService.status().selectedFund;
@@ -88,23 +105,25 @@ export default defineComponent({
         if (fund) {
           const assetMap = await trackAssets(fund.id, web3Service.getProvider());
 
-          tokens.value = tokenList.map((token) => {
-            let value = token.value;
-            if (value < 0) {
-              // TODO: look up value on uniswap
-              value = 1.0;
-            }
-            let owned = 0.0;
-            const ownedBigNumber = assetMap[token.id];
-            if (ownedBigNumber) {
-              owned = FixedNumber.fromValue(ownedBigNumber, token.decimals).toUnsafeFloat();
-            }
-            return {
-              ...token,
-              ownedAmount: owned,
-              value: value,
-            };
-          });
+          tokens.value = tokenList
+            .map((token) => {
+              let value = token.value;
+              if (value < 0) {
+                // TODO: look up value on uniswap
+                value = 1.0;
+              }
+              let owned = 0.0;
+              const ownedBigNumber = assetMap[token.id];
+              if (ownedBigNumber) {
+                owned = FixedNumber.fromValue(ownedBigNumber, token.decimals).toUnsafeFloat();
+              }
+              return {
+                ...token,
+                ownedAmount: owned,
+                value: value,
+              };
+            })
+            .sort((a, b) => b.value * b.ownedAmount - a.value * a.ownedAmount);
           distribution.value = calcPercentageMap(tokens.value);
           startingDistribution.value = Object.assign({}, distribution.value);
         } else {
@@ -114,15 +133,38 @@ export default defineComponent({
     });
 
     const distributionText = computed(() => {
-      let msg = '';
+      let valueChange = 0.0;
+      let tokensChanged = 0;
+      let tokensTotal = 0;
       Object.entries(distribution.value).forEach((entry) => {
         const original = startingDistribution.value[entry[0]] ?? 0.0;
-        if (entry[1] != original) {
-          msg += `${entry[0]}: change ${entry[1] - original}\n`;
+        if (entry[1] > 0 || original > 0) {
+          valueChange += Math.abs(entry[1] - original);
+          tokensTotal++;
+          if (entry[1] != original) {
+            tokensChanged++;
+          }
         }
       });
-      return msg;
+      return `${tokensChanged} / ${tokensTotal} changed, ${valueChange} % total portfolio adjustment.`;
     });
+
+    const displayPlan = ref(false);
+    const orderPlan: Ref<PlannedOrder[]> = ref([]);
+
+    const plan = () => {
+      orderPlan.value = defaultOrderPlanner.createPlan(tokens.value, distribution.value);
+      displayPlan.value = true;
+    };
+
+    const execute = async (order: PlannedOrder) => {
+      const result = await uniswapService.executeForEnzyme(order);
+      if (result.success) {
+        alert(`Success! ${result.message}`);
+      } else {
+        alert(`Failure. ${result.message}`);
+      }
+    };
 
     return {
       tokens,
@@ -132,6 +174,10 @@ export default defineComponent({
       selectFund,
       enzymeState: enzymeService.status(),
       distributionText,
+      plan,
+      displayPlan,
+      orderPlan,
+      execute,
     };
   },
   components: { SliderPanel },
