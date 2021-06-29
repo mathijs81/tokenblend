@@ -2,3 +2,27 @@
 @import '~primevue/resources/primevue.min.css';
 @import '~primeicons/primeicons.css';
 @import '~bootstrap/scss/bootstrap';
+
+.p-menubar {
+    background: transparent;
+    padding: 0.2rem;
+}
+.menubar {
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 0.5rem;
+}
+.p-menuitem-text {
+    color: #212529 !important;
+}
+.p-menuitem-link:focus {
+    box-shadow: none !important;
+}
+.logo {
+    padding-top: 0.25rem;
+    padding-right: 0.5rem;
+    font-weight: 700;
+    font-size: 1.4rem;
+    vertical-align: middle;
+    color: #212529 !important;
+    text-decoration: none !important;
+}

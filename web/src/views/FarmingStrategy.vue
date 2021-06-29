@@ -1,51 +1,34 @@
 <template>
-    <div v-if="state.connected">
-      <div v-if="funds.length > 0">
-        <h3>Your funds</h3>
-        <div v-for="fund in funds" v-bind:key="fund.id">
-          <a
-            href="#"
-            @click="selectFund(fund)"
-            :class="fund.id === enzymeState.selectedFund?.id ? 'selected' : ''"
-          >
-            <b>{{ fund.name }}</b> - <small>{{ fund.id }}</small>
-          </a>
-        </div>
-      </div>
-      <div v-else>{{ state.address }} has no enzyme funds</div>
-    </div>
   <div>
-    <h3> Curve farming status on Enzyme </h3>
+    <h3>Curve farming status on Enzyme</h3>
   </div>
 
   <div>
-    <p> Your farming positions on Curve</p>
+    <p>Your farming positions on Curve</p>
     <table>
-    <tr>
-      <th>Pool</th>
-      <th>Owned</th>
-      <th>Rewards</th>
-      <th>Cost of claim and deposit</th>
-      <th>Suggested Action</th>
-    </tr>
-    <tr v-for="item in tokens" :key="item.id" >
-      <th scope="row">{{ item.name }}</th>
-      <td> {{ item.ownedAmount }} </td>
-      <td> 0.3 crv </td>
-      <td> 0.03 eth </td>
-      <td> - </td>
-    </tr>
+      <tr>
+        <th>Pool</th>
+        <th>Owned</th>
+        <th>Rewards</th>
+        <th>Cost of claim and deposit</th>
+        <th>Suggested Action</th>
+      </tr>
+      <tr v-for="item in tokens" :key="item.id">
+        <th scope="row">{{ item.name }}</th>
+        <td>{{ item.ownedAmount }}</td>
+        <td>0.3 crv</td>
+        <td>0.03 eth</td>
+        <td>-</td>
+      </tr>
     </table>
   </div>
 
   <div>
-    <p> Gas Price: {{gasPrice}} gwei</p>
+    <p>Gas Price: {{ gasPrice }} gwei</p>
   </div>
-
 </template>
 
 <script lang="ts">
-
 /* eslint-disable vue/no-unused-components */
 import FarmingStrategy from '@/components/Farming.vue'; // @ is an alias to /src
 import { web3Service, Provider } from '@/web3/web3Service';
@@ -53,7 +36,7 @@ import { BigNumber, FixedNumber } from 'ethers';
 import { StandardToken, VaultLib } from '@enzymefinance/protocol';
 import { computed, defineComponent, Ref, ref, watchEffect } from 'vue';
 import { calcPercentageMap, TokenData } from '@/util/tokens';
-import {getGasPrice} from '@/util/getGasPrice';
+import { getGasPrice } from '@/util/getGasPrice';
 import { getTokens } from '@/data/enzymegraph';
 import { asyncComputed } from '@vueuse/core';
 import { enzymeService, Fund } from '@/web3/enzymeService';
@@ -77,16 +60,15 @@ async function trackAssets(
   return tokenMap;
 }
 
-
 export default defineComponent({
   name: 'FarmingStrategy',
 
   setup() {
-      const partialTokens: Ref<TokenData[]> = asyncComputed(async () => {
+    const partialTokens: Ref<TokenData[]> = asyncComputed(async () => {
       const tokenRequestResult = await getTokens(web3Service.isMainnet());
       const namesOnly: TokenData[] = tokenRequestResult.assets
         // not sure why, the bot example code also filters for this
-        .filter((asset) => asset.derivativeType && asset.name.includes("Curve.fi"))
+        .filter((asset) => asset.derivativeType && asset.name.includes('Curve.fi'))
         .map((asset) => ({
           id: asset.id.toLowerCase(),
           name: asset.name,
@@ -127,7 +109,7 @@ export default defineComponent({
             return {
               ...token,
               ownedAmount: owned,
-              value: value
+              value: value,
             };
           });
           distribution.value = calcPercentageMap(tokens.value);
@@ -163,12 +145,10 @@ export default defineComponent({
       selectFund,
       enzymeState: enzymeService.status(),
       distributionText,
-      gasPrice
+      gasPrice,
     };
-
   },
 
-  components: {FarmingStrategy}
-
+  components: { FarmingStrategy },
 });
 </script>

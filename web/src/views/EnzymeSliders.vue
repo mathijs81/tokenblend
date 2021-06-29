@@ -1,23 +1,8 @@
 <template>
   <div>
-    <div v-if="state.connected">
-      <div v-if="funds.length > 0">
-        <h3>Your funds</h3>
-        <div v-for="fund in funds" v-bind:key="fund.id">
-          <a
-            href="#"
-            @click="selectFund(fund)"
-            :class="fund.id === enzymeState.selectedFund?.id ? 'selected' : ''"
-          >
-            <b>{{ fund.name }}</b> - <small>{{ fund.id }}</small>
-          </a>
-        </div>
-      </div>
-      <div v-else>{{ state.address }} has no enzyme funds</div>
-    </div>
-    <h3>All Enzyme assets</h3>
+    <h3>Asset distribution</h3>
     {{ distributionText }}
-    <button class="btn btn-primary" @click="plan">Plan orders</button>
+    <button class="btn btn-primary float-end" @click="plan" v-if="orderVisible">Execute</button>
     <div>
       <SliderPanel :tokenData="tokens" v-model="distribution" />
     </div>
@@ -79,12 +64,12 @@ export default defineComponent({
     const partialTokens: Ref<TokenData[]> = asyncComputed(async () => {
       const tokenRequestResult = await getTokens(web3Service.isMainnet());
       const namesOnly: TokenData[] = tokenRequestResult.assets
-        // not sure why, the bot example code also filters for this
-        .filter((asset) => !asset.derivativeType)
+        // // not sure why, the bot example code also filters for this
+        // .filter((asset) => !asset.derivativeType)
         .map((asset) => ({
           id: asset.id.toLowerCase(),
           name: asset.name,
-          value: asset.price?.price ?? -1,
+          value: parseFloat(asset.price?.price ?? '-1'),
           ownedAmount: 0.0,
           decimals: asset.decimals,
         }));
@@ -132,7 +117,10 @@ export default defineComponent({
       }
     });
 
-    const distributionText = computed(() => {
+    const orderVisible = ref(false);
+
+    const distributionText = ref('');
+    watchEffect(() => {
       let valueChange = 0.0;
       let tokensChanged = 0;
       let tokensTotal = 0;
@@ -146,7 +134,10 @@ export default defineComponent({
           }
         }
       });
-      return `${tokensChanged} / ${tokensTotal} changed, ${valueChange} % total portfolio adjustment.`;
+      orderVisible.value = tokensChanged > 0;
+      distributionText.value = `${tokensChanged} / ${tokensTotal} changed, ${valueChange.toFixed(
+        1
+      )} % total portfolio adjustment.`;
     });
 
     const displayPlan = ref(false);
@@ -158,11 +149,19 @@ export default defineComponent({
     };
 
     const execute = async (order: PlannedOrder) => {
-      const result = await uniswapService.executeForEnzyme(order);
-      if (result.success) {
-        alert(`Success! ${result.message}`);
-      } else {
-        alert(`Failure. ${result.message}`);
+      try {
+        const result = await uniswapService.executeForEnzyme(order);
+        if (result.success) {
+          alert(`Success! ${result.message}`);
+        } else {
+          alert(`Failure. ${result.message}`);
+        }
+      } catch (error) {
+        let message = error;
+        if (error['message']) {
+          message = error['message'];
+        }
+        alert(`There was a problem: ${message}`);
       }
     };
 
@@ -177,6 +176,7 @@ export default defineComponent({
       plan,
       displayPlan,
       orderPlan,
+      orderVisible,
       execute,
     };
   },

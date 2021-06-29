@@ -1,11 +1,9 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 import Home from '../views/Home.vue';
-import EnzymeSliders from '../views/EnzymeSliders.vue';
-
-import FarmingStrategy from '../views/FarmingStrategy.vue';
+import EnzymeAccount from '../views/EnzymeAccount.vue';
+import WalletAccount from '../views/WalletAccount.vue';
 
 import Uniswap from '../views/Uniswap.vue';
-
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -14,27 +12,21 @@ const routes: Array<RouteRecordRaw> = [
     component: Home,
   },
   {
-    path: '/sliders',
-    name: 'Sliders',
-    component: () => import(/* webpackChunkName: "sliders" */ '../views/ConstantStrategy.vue'),
+    path: '/enzyme/:account',
+    name: 'EnzymeAccount',
+    component: EnzymeAccount,
+    props: true,
   },
   {
-    path: '/enzyme_sliders',
-    name: 'EnzymeSliders',
-    component: EnzymeSliders,
-  },
-  {
-
-    path: '/FarmingStrategy',
-    name: 'FarmingStrategy',
-    component: FarmingStrategy,
+    path: '/wallet',
+    name: 'WalletAccount',
+    component: WalletAccount,
   },
   {
     path: '/uniswap',
     name: 'Uniswap',
     component: Uniswap,
   },
-
 ];
 
 const router = createRouter({

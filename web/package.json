@@ -13,7 +13,7 @@
     "@metamask/detect-provider": "^1.2.0",
     "@vueuse/core": "^5.0.3",
     "axios": "^0.21.1",
-    "bootstrap": "^5.0.1",
+    "bootstrap": "^5.0.2",
     "core-js": "^3.6.5",
     "ethers": "^5.3.1",
     "graphql": "^15.5.1",

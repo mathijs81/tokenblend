@@ -12,34 +12,23 @@
       </thead>
       <tbody>
         <tr>
-          <td>Total</td>
-          <td></td>
-          <td></td>
-          <td class="text-center">
+          <td><b>Total</b></td>
+          <td colspan="4" class="text-end">
             {{ totalPercentage.toFixed(1) }}
-            <button class="ms-2 btn btn-primary" @click="normalize">Make 100%</button>
+            <button class="ms-2 btn btn-primary" @click="normalize">Normalize</button>
           </td>
         </tr>
 
         <tr v-for="token in tokenData" v-bind:key="token.name">
           <td>{{ token.name }}</td>
-          <td>{{ token.value }}</td>
-          <td>{{ token.ownedAmount }}</td>
-          <td>{{ token.ownedAmount * token.value }}</td>
+          <td>{{ formatPrice(token) }}</td>
+          <td>{{ formatOwned(token) }}</td>
+          <td>{{ formatValue(token) }}</td>
           <td>
             <div class="d-flex flex-column align-items-center">
               <InputText v-model="percentageMap[token.id]" />
               <Slider v-model="percentageMap[token.id]" />
             </div>
-          </td>
-        </tr>
-        <tr>
-          <td>Total</td>
-          <td></td>
-          <td></td>
-          <td class="text-center">
-            {{ totalPercentage.toFixed(1) }}
-            <button class="ms-2 btn btn-primary" @click="normalize">Make 100%</button>
           </td>
         </tr>
       </tbody>
@@ -107,16 +96,29 @@ export default defineComponent({
 
     return { percentageMap, totalPercentage, normalize };
   },
+  methods: {
+    formatPrice(token: TokenData): string {
+      return token.value.toFixed(1);
+    },
+
+    formatOwned(token: TokenData): string {
+      return token.ownedAmount.toFixed(1);
+    },
+
+    formatValue(token: TokenData): string {
+      return (token.ownedAmount * token.value).toFixed(1);
+    },
+  },
 });
 </script>
 <style scoped>
 .p-inputtext {
-  width: 14rem;
+  width: 8rem;
   padding: 0.2rem;
   font-size: 0.8rem;
 }
 .p-slider-horizontal {
-  width: 14rem;
+  width: 8rem;
   margin-bottom: 0.1rem;
 }
 </style>
