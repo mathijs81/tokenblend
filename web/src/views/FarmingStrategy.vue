@@ -83,7 +83,7 @@ export default defineComponent({
 
   setup() {
       const partialTokens: Ref<TokenData[]> = asyncComputed(async () => {
-      const tokenRequestResult = await getTokens(web3Service.isProd());
+      const tokenRequestResult = await getTokens(web3Service.isMainnet());
       const namesOnly: TokenData[] = tokenRequestResult.assets
         // not sure why, the bot example code also filters for this
         .filter((asset) => asset.derivativeType && asset.name.includes("Curve.fi"))
