@@ -60,7 +60,10 @@ class SimpleOrderPlanCreator implements OrderPlanCreator {
     currentPortfolio.forEach((token) => {
       const currentFraction = (token.ownedAmount * token.value) / totalValue;
       const desiredFraction = (desiredDistribution[token.id] ?? 0.0) / 100;
-      if (currentFraction - desiredFraction > DIFFERENCE_THRESHOLD) {
+      if (
+        currentFraction - desiredFraction > DIFFERENCE_THRESHOLD &&
+        token.id != switchTokenData.id
+      ) {
         const sellFraction = currentFraction - desiredFraction;
         valueSold += sellFraction * totalValue;
         orders.push({
@@ -68,7 +71,10 @@ class SimpleOrderPlanCreator implements OrderPlanCreator {
           toToken: switchTokenData,
           sendAmount: fixedNum((sellFraction * totalValue) / token.value),
         });
-      } else if (currentFraction - desiredFraction < -DIFFERENCE_THRESHOLD) {
+      } else if (
+        currentFraction - desiredFraction < -DIFFERENCE_THRESHOLD &&
+        token.id != switchTokenData.id
+      ) {
         const buyFraction = desiredFraction - currentFraction;
         valueBought += buyFraction * totalValue;
         buyOrders.push({

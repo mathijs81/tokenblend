@@ -1,6 +1,6 @@
 // Quick hack: copied sdk.ts & subgraph.ts from provided bot repository https://github.com/avantgardefinance/enzyme-bot
 import { gql } from './sdk';
-import { AssetsQuery, FundsQuery } from './subgraph';
+import { AssetsQuery, FundsQuery, Release } from './subgraph';
 
 const prodEndpoint = 'https://api.thegraph.com/subgraphs/name/enzymefinance/enzyme';
 const kovanEndpoint = 'https://api.thegraph.com/subgraphs/name/enzymefinance/enzyme-kovan';
@@ -21,4 +21,12 @@ export async function getFunds(prod: boolean, account: string): Promise<FundsQue
   }
   const result = await gql(endpoint(prod)).funds({ id: address });
   return result;
+}
+
+export async function getContracts(): Promise<Release> {
+  const result = await gql(endpoint(true)).currentReleaseContracts();
+  if (!result.network || !result.network.currentRelease) {
+    throw "gql query didn't contain network";
+  }
+  return result.network.currentRelease as Release;
 }

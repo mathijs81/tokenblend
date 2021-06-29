@@ -4,6 +4,7 @@
       <thead>
         <tr>
           <th scope="col">Token</th>
+          <th scope="col">Price</th>
           <th scope="col">Current balance</th>
           <th scope="col">Current value</th>
           <th scope="col" class="text-center">Desired weight</th>
@@ -22,6 +23,7 @@
 
         <tr v-for="token in tokenData" v-bind:key="token.name">
           <td>{{ token.name }}</td>
+          <td>{{ token.value }}</td>
           <td>{{ token.ownedAmount }}</td>
           <td>{{ token.ownedAmount * token.value }}</td>
           <td>
@@ -70,7 +72,7 @@ export default defineComponent({
         } else {
           Object.assign(percentageMap, calcPercentageMap(props.tokenData));
         }
-        for (let [_, token] of Object.entries(props.tokenData)) {
+        for (let [, token] of Object.entries(props.tokenData)) {
           if (!(token.id in percentageMap)) {
             percentageMap[token.id] = 0.0;
           }

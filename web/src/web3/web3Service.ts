@@ -1,7 +1,7 @@
 import { ExternalProvider } from '@ethersproject/providers';
 import detectEthereumProvider from '@metamask/detect-provider';
 import { reactive, readonly } from '@vue/reactivity';
-import { ethers, utils } from 'ethers';
+import { ethers, utils, Signer } from 'ethers';
 
 export type Provider = ethers.providers.Web3Provider;
 
@@ -53,6 +53,7 @@ export interface Web3Status {
 
 class Web3Service {
   private provider?: Provider;
+  private signer?: Signer;
   private state: Web3Status = reactive({
     initializing: true,
   }) as Web3Status;
@@ -66,20 +67,25 @@ class Web3Service {
     return this.provider;
   }
 
+  public getSigner(): Signer {
+    if (!this.signer) {
+      throw 'Signer not initialized';
+    }
+    return this.signer;
+  }
+
   public status(): Web3Status {
     return this.copy;
   }
 
-  public isProd(): boolean {
+  public isMainnet(): boolean {
     return this.state.network !== 'kovan';
   }
 
   private async updateData() {
     if (this.provider !== undefined) {
-      let block;
       try {
-        block = await this.provider.getBlock('latest');
-        console.log(`updating for block ${block.number}`);
+        await this.provider.getBlock('latest');
       } catch (err) {
         if (err instanceof Error) {
           if (err.message.includes('underlying network changed')) {
@@ -94,7 +100,6 @@ class Web3Service {
       const network = await this.provider.getNetwork();
       this.state.network = network.name;
       this.state.chainId = network.chainId;
-      console.log(`connected to ${this.state.network}`);
       const accounts = await this.provider.listAccounts();
       this.state.connected = accounts.length > 0;
       if (accounts.length > 0) {
@@ -113,7 +118,7 @@ class Web3Service {
     return getProvider()
       .then(async (provider) => {
         this.provider = provider;
-        await this.provider.getSigner();
+        this.signer = await this.provider.getSigner();
         if (this.intervalHandler === undefined) {
           this.intervalHandler = window.setInterval(() => this.updateData(), 2000);
         }

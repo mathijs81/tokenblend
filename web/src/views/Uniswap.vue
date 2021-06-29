@@ -15,19 +15,17 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from 'vue';
-
 import { web3Service } from '@/web3/web3Service';
 import { getDefaultProvider } from '@ethersproject/providers';
-
 import { asyncComputed } from '@vueuse/core';
 import {
-  UniswapPair,
   ChainId,
-  UniswapVersion,
-  UniswapPairSettings,
   TradeDirection,
+  UniswapPair,
+  UniswapPairSettings,
+  UniswapVersion,
 } from 'simple-uniswap-sdk';
+import { computed, defineComponent } from 'vue';
 
 export default defineComponent({
   name: 'Uniswap',
