@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 import Home from '../views/Home.vue';
 import EnzymeSliders from '../views/EnzymeSliders.vue';
+import FarmingStrategy from '../views/FarmingStrategy.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -18,6 +19,11 @@ const routes: Array<RouteRecordRaw> = [
     name: 'EnzymeSliders',
     component: EnzymeSliders,
   },
+  {
+    path: '/FarmingStrategy',
+    name: 'FarmingStrategy',
+    component: FarmingStrategy,
+  }
 ];
 
 const router = createRouter({
