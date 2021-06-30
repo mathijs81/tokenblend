@@ -20,7 +20,7 @@
         </tr>
 
         <tr v-for="token in tokenData" v-bind:key="token.name">
-          <td>{{ token.name }}</td>
+          <td><img v-if="token.logoUri" :src="token.logoUri" class="token-img"/> {{ token.name }}</td>
           <td>{{ formatPrice(token) }}</td>
           <td>{{ formatOwned(token) }}</td>
           <td>{{ formatValue(token) }}</td>
@@ -120,5 +120,9 @@ export default defineComponent({
 .p-slider-horizontal {
   width: 8rem;
   margin-bottom: 0.1rem;
+}
+.token-img {
+  width: 2rem;
+  height: 2rem;
 }
 </style>

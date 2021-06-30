@@ -4,6 +4,7 @@ export interface TokenData {
   decimals: number;
   ownedAmount: number;
   value: number;
+  logoUri?: string;
 }
 
 export function calcPercentageMap(tokenData: TokenData[]): Record<string, number> {
