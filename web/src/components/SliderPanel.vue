@@ -20,7 +20,12 @@
         </tr>
 
         <tr v-for="token in tokenData" v-bind:key="token.name">
-          <td><img v-if="token.logoUri" :src="token.logoUri" class="token-img"/> {{ token.name }}</td>
+          <td>
+            <img v-if="token.logoUri" :src="token.logoUri" class="token-img" /><a
+              :title="token.id"
+              >{{ token.name }}</a
+            >
+          </td>
           <td>{{ formatPrice(token) }}</td>
           <td>{{ formatOwned(token) }}</td>
           <td>{{ formatValue(token) }}</td>

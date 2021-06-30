@@ -13,10 +13,12 @@
 <script lang="ts">
 import SliderPanel from '@/components/SliderPanel.vue';
 import { fetchTokens } from '@/util/tokenlist';
-import { TokenData } from '@/util/tokens';
+import { getTokenBalance, TokenData } from '@/util/tokens';
 import { web3Service } from '@/web3/web3Service';
 import { asyncComputed } from '@vueuse/core';
+import { ChainId, TokenFactoryPublic } from 'simple-uniswap-sdk';
 import { defineComponent, ref, Ref, watchEffect } from 'vue';
+import { BigNumber, utils } from 'ethers';
 
 export default defineComponent({
   setup(props) {
@@ -25,21 +27,33 @@ export default defineComponent({
 
     // TODO: native ETH is not shown now (only WETH)
 
-    watchEffect(() => {
+    watchEffect(async () => {
       const account = web3Service.status().address;
       const tokens = tokenList.value;
-      // Look up all balances and create TokenData
-      tokenData.value = tokens.map((tokenInfo) => {
-        // TODO: lookup actual price & owned amounts
-        return {
-          id: tokenInfo.address,
-          name: tokenInfo.name,
-          decimals: tokenInfo.decimals,
-          ownedAmount: 0.0,
-          value: 0.0,
-          logoUri: tokenInfo.logoURI,
-        };
+      const balances = tokens.map((token) => {
+        if (account) {
+          return getTokenBalance(token.address, account);
+        } else {
+          return Promise.resolve(BigNumber.from('0'));
+        }
       });
+      // Look up all balances and create TokenData
+      let index = -1;
+      tokenData.value = (
+        await Promise.all(
+          tokens.map(async (tokenInfo) => {
+            index++;
+            return {
+              id: tokenInfo.address,
+              name: tokenInfo.name,
+              decimals: tokenInfo.decimals,
+              ownedAmount: parseFloat(utils.formatUnits(await balances[index], tokenInfo.decimals)),
+              value: 0.0000001,
+              logoUri: tokenInfo.logoURI,
+            };
+          })
+        )
+      ).sort((a, b) => b.value * b.ownedAmount - a.value * a.ownedAmount);
     });
     const state = web3Service.status();
     return { state, tokenData };

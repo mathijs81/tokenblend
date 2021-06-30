@@ -1,3 +1,7 @@
+import { Contract, BigNumber } from 'ethers';
+import { web3Service } from '@/web3/web3Service';
+import { ChainId, EthersProvider, TokenFactoryPublic } from 'simple-uniswap-sdk';
+
 export interface TokenData {
   id: string;
   name: string;
@@ -22,4 +26,14 @@ export function calcPercentageMap(tokenData: TokenData[]): Record<string, number
     }
   }
   return percentageMap;
+}
+
+export async function getTokenBalance(
+  contractAddress: string,
+  address: string
+): Promise<BigNumber> {
+  const provider = web3Service.getProvider();
+  const abi = ['function balanceOf(address owner) view returns (uint256)'];
+  const contract = new Contract(contractAddress, abi, provider);
+  return contract.balanceOf(address);
 }
