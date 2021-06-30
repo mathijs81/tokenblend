@@ -6,7 +6,7 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "codegen": "graphql-codegen --config codegen.yaml"
+    "codegen": "graphql-codegen --config codegen.yaml;graphql-codegen --config codegen_uniswap.yaml"
   },
   "dependencies": {
     "@enzymefinance/protocol": "^2.0.7",
@@ -67,7 +67,8 @@
     },
     "rules": {},
     "ignorePatterns": [
-      "src/data/subgraph.ts"
+      "src/data/subgraph.ts",
+      "src/data/uniswap_subgraph.ts"
     ]
   },
   "browserslist": [

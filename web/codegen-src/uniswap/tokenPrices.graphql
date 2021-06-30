@@ -1,0 +1,8 @@
+query tokenPrice($addressList: [ID!]) {
+  tokens(where: { id_in: $addressList }) {
+    id
+    symbol
+    name
+    derivedETH
+  }
+}

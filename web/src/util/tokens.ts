@@ -1,6 +1,5 @@
-import { Contract, BigNumber } from 'ethers';
 import { web3Service } from '@/web3/web3Service';
-import { ChainId, EthersProvider, TokenFactoryPublic } from 'simple-uniswap-sdk';
+import { BigNumber, Contract } from 'ethers';
 
 export interface TokenData {
   id: string;

@@ -22,3 +22,4 @@ pnpm-debug.log*
 *.sw?
 
 src/data/subgraph.ts
+src/data/uniswap_subgraph.ts

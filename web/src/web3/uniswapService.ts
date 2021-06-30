@@ -1,6 +1,8 @@
+import { getSdk, Sdk, Token } from '@/data/uniswap_subgraph';
 import { PlannedOrder } from '@/orderplan/orderplan';
 import { reduceDecimals } from '@/util/numbers';
 import { FixedNumber, utils } from 'ethers';
+import { GraphQLClient } from 'graphql-request';
 import {
   ChainId,
   TradeDirection,
@@ -75,6 +77,31 @@ class UniswapService {
 
     return enzymeService.executeUniswapV2Trade(result.bestRouteQuote.routePathArray, toBn, fromBn);
   }
+}
+
+// --- stuff for thegraph uniswap ---
+
+const endpoint = 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3';
+function gql(endpoint: string): Sdk {
+  return getSdk(new GraphQLClient(endpoint));
+}
+
+type TokenPriceData = Pick<Token, 'id' | 'symbol' | 'name' | 'derivedETH'>;
+export async function getTokenPrices(addresses: string[]): Promise<Record<string, TokenPriceData>> {
+  // thegraph only returns results for lowercased addresses.
+  const queryResult = await gql(endpoint).tokenPrice({
+    addressList: addresses.map((addr) => addr.toLowerCase()),
+  });
+  const asMap = queryResult.tokens.reduce((map: Record<string, TokenPriceData>, token) => {
+    map[token.id] = token;
+    return map;
+  }, {});
+  // Make sure that the caller can retrieve items with the same cast IDs as he called us with
+  const result: Record<string, TokenPriceData> = {};
+  addresses.forEach((addr) => {
+    result[addr] = asMap[addr.toLowerCase()];
+  });
+  return result;
 }
 
 const uniswapService = new UniswapService();
