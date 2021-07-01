@@ -15,7 +15,6 @@
           <td><b>Total</b></td>
           <td colspan="4" class="text-end">
             {{ totalPercentage.toFixed(1) }}
-            <button class="ms-2 btn btn-primary" @click="normalize">Normalize</button>
           </td>
         </tr>
 
@@ -48,6 +47,63 @@
 import { calcPercentageMap, TokenData } from '@/util/tokens';
 import { computed, defineComponent, PropType, reactive, watch } from 'vue';
 import { utils } from 'ethers';
+import { debouncedWatch } from '@vueuse/core';
+
+function adjustRatios(
+  before: Record<string, number>,
+  after: Record<string, number>,
+  defaultKey: string
+) {
+  let N = 0;
+  while (N++ < 5) {
+    const totalAfter = Object.values(after).reduce((a, b) => a + b, 0.0);
+    if (totalAfter > 0.001 && Math.abs(totalAfter - 100) > 0.001) {
+      let adjustment = 100 - totalAfter;
+      const changedKeys = new Set(
+        Object.keys(before).filter((key) => Math.abs(before[key] - after[key]) > 0.0001)
+      );
+      // If the user didn't touch WETH, we can try to correct everything by adjusting that.
+      if (!changedKeys.has(defaultKey)) {
+        const newDefault = Math.max(0, after[defaultKey] + adjustment);
+        adjustment -= newDefault - after[defaultKey];
+        after[defaultKey] = newDefault;
+        changedKeys.add(defaultKey);
+      }
+
+      if (Math.abs(adjustment) > 0.001) {
+        // We need to apply the adjustment to other tokens, ideally ones that haven't been moved
+        const unmovedTotal = Object.keys(after)
+          .filter((key) => !changedKeys.has(key))
+          .map((key) => after[key])
+          .reduce((a, b) => a + b, 0.0);
+        if (unmovedTotal > 0.01) {
+          const adjustmentPerValue = adjustment / unmovedTotal;
+          Object.keys(after)
+            .filter((key) => !changedKeys.has(key))
+            .forEach((key) => {
+              const current = after[key];
+              const adjust = adjustmentPerValue * current;
+              after[key] += adjust;
+            });
+        } else {
+          // Just apply it to everything equally
+          const total = Object.values(after).reduce((a, b) => a + b, 0.0);
+          const adjustmentPerValue = adjustment / total;
+          Object.keys(after).forEach((key) => {
+            const current = after[key];
+            const adjust = adjustmentPerValue * current;
+            after[key] += adjust;
+          });
+        }
+      }
+      Object.keys(after).forEach((key) => {
+        after[key] = Math.max(0, Math.min(100, parseFloat(after[key].toFixed(1))));
+      });
+    } else {
+      break;
+    }
+  }
+}
 
 export default defineComponent({
   name: 'SliderPanel',
@@ -78,6 +134,21 @@ export default defineComponent({
       }
     );
 
+    const wethContract = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
+    const prevMap = {};
+    const normalize = () => {
+      adjustRatios(prevMap, percentageMap, wethContract);
+      Object.assign(prevMap, percentageMap);
+    };
+
+    debouncedWatch(
+      percentageMap,
+      () => {
+        normalize();
+      },
+      { debounce: 500 }
+    );
+
     const totalPercentage = computed(() => {
       var value = 0.0;
       for (let [, itemValue] of Object.entries(percentageMap)) {
@@ -85,25 +156,12 @@ export default defineComponent({
       }
       return value;
     });
-    const normalize = () => {
-      const current = totalPercentage.value;
-      if (current <= 0) {
-        // TODO: add toast system
-        alert(`Can't normalize when all sliders are 0`);
-      } else {
-        for (let [id, value] of Object.entries(percentageMap)) {
-          const newValue = (value * 100.0) / current;
-          // Round to one decimal
-          percentageMap[id] = Math.round(newValue * 10) / 10.0;
-        }
-      }
-    };
 
     watch(percentageMap, () => {
       emit('update:modelValue', percentageMap);
     });
 
-    return { percentageMap, totalPercentage, normalize };
+    return { percentageMap, totalPercentage };
   },
   methods: {
     formatPrice(token: TokenData): string {

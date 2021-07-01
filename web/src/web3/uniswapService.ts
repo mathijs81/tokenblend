@@ -4,12 +4,11 @@ import { reduceDecimals } from '@/util/numbers';
 import { BigNumber, FixedNumber, utils } from 'ethers';
 import { GraphQLClient } from 'graphql-request';
 import {
-  ChainId,
   TradeDirection,
   UniswapPair,
+  UniswapPairFactory,
   UniswapPairSettings,
   UniswapVersion,
-  UniswapPairFactory,
 } from 'simple-uniswap-sdk';
 import { enzymeService } from './enzymeService';
 import { web3Service } from './web3Service';
@@ -44,10 +43,7 @@ class UniswapService {
       fromTokenContractAddress: plannedOrder.fromToken.id,
       toTokenContractAddress: plannedOrder.toToken.id,
       ethereumAddress: address,
-      //ethereumProvider: web3Service.getExternalProvider(),
-      // Intentially wrong until https://github.com/uniswap-integration/simple-uniswap-sdk/issues/9 is resolved:
-      chainId: ChainId.ROPSTEN,
-      providerUrl: 'http://localhost:8545',
+      ethereumProvider: web3Service.getExternalProvider(),
       settings: new UniswapPairSettings({
         // if not supplied it will use `0.005` which is 0.5%
         // please pass it in as a full number decimal so 0.7%
