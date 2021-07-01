@@ -21,7 +21,7 @@
 
         <tr v-for="token in tokenData" v-bind:key="token.name">
           <td>
-            <img v-if="token.logoUri" :src="token.logoUri" class="token-img" /><a
+            <img v-if="token.logoUri" :src="token.logoUri" class="token-img me-2" /><a
               :title="token.id"
               >{{ token.name }}</a
             >

@@ -38,10 +38,11 @@ export default defineComponent({
           return Promise.resolve(BigNumber.from('0'));
         }
       });
-      const tetherAddress = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
+      const usdAddress = '0x6B175474E89094C44Da98b954EedeAC495271d0F'; // DAI stablecoin
       const tokenPriceMap = getTokenPrices(tokens.map((token) => token.address));
       const tokenPrices = await tokenPriceMap;
-      const multiplier = 1.0 / (tokenPrices[tetherAddress]?.derivedETH ?? 1.0);
+
+      const multiplier = 1.0 / (tokenPrices[usdAddress]?.derivedETH ?? 1.0);
 
       let index = -1;
       tokenData.value = (
