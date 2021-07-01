@@ -5,7 +5,7 @@ import { ethers, utils, Signer } from 'ethers';
 
 export type Provider = ethers.providers.Web3Provider;
 
-async function getProvider(): Promise<Provider> {
+async function getProvider(): Promise<ExternalProvider> {
   const ethProvider = (await detectEthereumProvider({
     timeout: 1000,
   })) as ExternalProvider;
@@ -39,7 +39,7 @@ async function getProvider(): Promise<Provider> {
       console.log("enable also didn't work", err);
     }
   }
-  return new ethers.providers.Web3Provider(provider);
+  return provider;
 }
 
 export interface Web3Status {
@@ -52,6 +52,7 @@ export interface Web3Status {
 }
 
 class Web3Service {
+  private externalProvider?: ExternalProvider;
   private provider?: Provider;
   private signer?: Signer;
   private state: Web3Status = reactive({
@@ -65,6 +66,12 @@ class Web3Service {
       throw 'Provider not initialized';
     }
     return this.provider;
+  }
+  public getExternalProvider(): ExternalProvider {
+    if (!this.externalProvider) {
+      throw 'Provider not initialized';
+    }
+    return this.externalProvider;
   }
 
   public getSigner(): Signer {
@@ -116,7 +123,9 @@ class Web3Service {
       this.state.initializing = true;
     }
     return getProvider()
-      .then(async (provider) => {
+      .then(async (externalProvider) => {
+        this.externalProvider = externalProvider;
+        const provider = new ethers.providers.Web3Provider(externalProvider);
         this.provider = provider;
         this.signer = await this.provider.getSigner();
         if (this.intervalHandler === undefined) {
@@ -132,6 +141,22 @@ class Web3Service {
       })
       .finally(() => (this.state.initializing = false));
   }
+}
+
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
+export function extractErrorMessage(error: any): string {
+  let message = error;
+  if (error['message']) {
+    message = error['message'];
+  }
+  if (message === 'Internal JSON-RPC error.') {
+    // Try to get more useful message from metamask object
+    const alternativeMessage = error.data?.message;
+    if (alternativeMessage) {
+      message = alternativeMessage;
+    }
+  }
+  return message;
 }
 
 const web3Service = new Web3Service();

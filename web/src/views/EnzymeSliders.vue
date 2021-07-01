@@ -6,31 +6,18 @@
     <div>
       <SliderPanel :tokenData="tokens" v-model="distribution" />
     </div>
-    <Dialog header="Order plan" v-model:visible="displayPlan">
-      <div
-        v-for="order in orderPlan"
-        v-bind:key="order.sendAmount + order.fromToken.name"
-        class="row"
-      >
-        <div class="col-9">
-          {{ order.sendAmount.toString() }} {{ order.fromToken.name }} =>
-          {{ order.toToken.name }}
-        </div>
-        <div class="col-3">
-          <button class="btn btn-primary" @click="execute(order)">Execute</button>
-        </div>
-      </div>
-    </Dialog>
+    <OrderPlanDialog v-model:visible="displayPlan" :orderPlan="orderPlan" :isEnzyme="true" />
   </div>
 </template>
 
 <script lang="ts">
+import OrderPlanDialog from '@/components/OrderPlanDialog.vue';
 import SliderPanel from '@/components/SliderPanel.vue';
 import { getTokens } from '@/data/enzymegraph';
 import { defaultOrderPlanner, PlannedOrder } from '@/orderplan/orderplan';
+import { calcSliderChangeResult } from '@/util/sliderUtil';
 import { calcPercentageMap, TokenData } from '@/util/tokens';
 import { enzymeService, Fund } from '@/web3/enzymeService';
-import { uniswapService } from '@/web3/uniswapService';
 import { Provider, web3Service } from '@/web3/web3Service';
 import { StandardToken, VaultLib } from '@enzymefinance/protocol';
 import { asyncComputed } from '@vueuse/core';
@@ -70,7 +57,7 @@ export default defineComponent({
           id: asset.id.toLowerCase(),
           name: asset.name,
           value: parseFloat(asset.price?.price ?? '-1'),
-          ownedAmount: 0.0,
+          ownedAmount: FixedNumber.from('0'),
           decimals: asset.decimals,
         }));
       return namesOnly;
@@ -97,10 +84,10 @@ export default defineComponent({
                 // TODO: look up value on uniswap
                 value = 1.0;
               }
-              let owned = 0.0;
+              let owned = token.ownedAmount;
               const ownedBigNumber = assetMap[token.id];
               if (ownedBigNumber) {
-                owned = FixedNumber.fromValue(ownedBigNumber, token.decimals).toUnsafeFloat();
+                owned = FixedNumber.fromValue(ownedBigNumber, token.decimals);
               }
               return {
                 ...token,
@@ -108,7 +95,10 @@ export default defineComponent({
                 value: value,
               };
             })
-            .sort((a, b) => b.value * b.ownedAmount - a.value * a.ownedAmount);
+            .sort(
+              (a, b) =>
+                b.value * b.ownedAmount.toUnsafeFloat() - a.value * a.ownedAmount.toUnsafeFloat()
+            );
           distribution.value = calcPercentageMap(tokens.value);
           startingDistribution.value = Object.assign({}, distribution.value);
         } else {
@@ -118,26 +108,11 @@ export default defineComponent({
     });
 
     const orderVisible = ref(false);
-
     const distributionText = ref('');
     watchEffect(() => {
-      let valueChange = 0.0;
-      let tokensChanged = 0;
-      let tokensTotal = 0;
-      Object.entries(distribution.value).forEach((entry) => {
-        const original = startingDistribution.value[entry[0]] ?? 0.0;
-        if (entry[1] > 0 || original > 0) {
-          valueChange += Math.abs(entry[1] - original);
-          tokensTotal++;
-          if (entry[1] != original) {
-            tokensChanged++;
-          }
-        }
-      });
-      orderVisible.value = tokensChanged > 0;
-      distributionText.value = `${tokensChanged} / ${tokensTotal} changed, ${valueChange.toFixed(
-        1
-      )} % total portfolio adjustment.`;
+      const result = calcSliderChangeResult(distribution.value, startingDistribution.value);
+      orderVisible.value = result.hasChanges;
+      distributionText.value = result.message;
     });
 
     const displayPlan = ref(false);
@@ -147,24 +122,6 @@ export default defineComponent({
       orderPlan.value = defaultOrderPlanner.createPlan(tokens.value, distribution.value);
       displayPlan.value = true;
     };
-
-    const execute = async (order: PlannedOrder) => {
-      try {
-        const result = await uniswapService.executeForEnzyme(order);
-        if (result.success) {
-          alert(`Success! ${result.message}`);
-        } else {
-          alert(`Failure. ${result.message}`);
-        }
-      } catch (error) {
-        let message = error;
-        if (error['message']) {
-          message = error['message'];
-        }
-        alert(`There was a problem: ${message}`);
-      }
-    };
-
     return {
       tokens,
       distribution,
@@ -177,10 +134,9 @@ export default defineComponent({
       displayPlan,
       orderPlan,
       orderVisible,
-      execute,
     };
   },
-  components: { SliderPanel },
+  components: { SliderPanel, OrderPlanDialog },
 });
 </script>
 

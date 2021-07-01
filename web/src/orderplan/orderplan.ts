@@ -49,7 +49,7 @@ class SimpleOrderPlanCreator implements OrderPlanCreator {
 
     let totalValue = 0.0;
     currentPortfolio.forEach((token) => {
-      totalValue += token.ownedAmount * token.value;
+      totalValue += token.ownedAmount.toUnsafeFloat() * token.value;
     });
 
     let valueSold = 0.0;
@@ -58,7 +58,7 @@ class SimpleOrderPlanCreator implements OrderPlanCreator {
     let valueBought = 0.0;
     // Check what we can sell
     currentPortfolio.forEach((token) => {
-      const currentFraction = (token.ownedAmount * token.value) / totalValue;
+      const currentFraction = (token.ownedAmount.toUnsafeFloat() * token.value) / totalValue;
       const desiredFraction = (desiredDistribution[token.id] ?? 0.0) / 100;
       if (
         currentFraction - desiredFraction > DIFFERENCE_THRESHOLD &&
@@ -85,12 +85,16 @@ class SimpleOrderPlanCreator implements OrderPlanCreator {
       }
     });
 
-    if (valueBought >= valueSold + switchTokenData.ownedAmount * switchTokenData.value) {
+    if (
+      valueBought >=
+      valueSold + switchTokenData.ownedAmount.toUnsafeFloat() * switchTokenData.value
+    ) {
       // We're trying to buy more than that we're selling (could be that some sell orders
       // don't happen because of the threshold)
       // Adjust the buys down so we can execute them all
       const adjustMultiplier =
-        ((valueSold + switchTokenData.ownedAmount * switchTokenData.value) * 0.99) / valueBought;
+        ((valueSold + switchTokenData.ownedAmount.toUnsafeFloat() * switchTokenData.value) * 0.99) /
+        valueBought;
       buyOrders.forEach((order) => {
         orders.push({
           ...order,

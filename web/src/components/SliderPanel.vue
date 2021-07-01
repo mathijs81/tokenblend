@@ -31,7 +31,10 @@
           <td>{{ formatValue(token) }}</td>
           <td>
             <div class="d-flex flex-column align-items-center">
-              <InputText v-model="percentageMap[token.id]" />
+              <InputText
+                :modelValue="percentageMap[token.id]"
+                @update:modelValue="percentageMap[token.id] = parseFloat($event)"
+              />
               <Slider v-model="percentageMap[token.id]" />
             </div>
           </td>
@@ -44,6 +47,7 @@
 <script lang="ts">
 import { calcPercentageMap, TokenData } from '@/util/tokens';
 import { computed, defineComponent, PropType, reactive, watch } from 'vue';
+import { utils } from 'ethers';
 
 export default defineComponent({
   name: 'SliderPanel',
@@ -107,11 +111,11 @@ export default defineComponent({
     },
 
     formatOwned(token: TokenData): string {
-      return token.ownedAmount.toFixed(1);
+      return token.ownedAmount.toUnsafeFloat().toString();
     },
 
     formatValue(token: TokenData): string {
-      return (token.ownedAmount * token.value).toFixed(1);
+      return (token.ownedAmount.toUnsafeFloat() * token.value).toFixed(1);
     },
   },
 });

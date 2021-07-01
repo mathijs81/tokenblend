@@ -2,28 +2,40 @@
   <div v-if="state.connected">
     <h2>{{ state.address }}</h2>
     <div class="row">
+      <div>
+        {{ distributionText }}
+        <button class="btn btn-primary float-end" @click="execute" v-if="orderVisible">
+          Execute
+        </button>
+      </div>
       <div class="col">
-        <SliderPanel :tokenData="tokenData" />
+        <SliderPanel :tokenData="tokenData" v-model="distribution" />
       </div>
     </div>
+    <OrderPlanDialog v-model:visible="orderDialogVisible" :orderPlan="orderPlan" />
   </div>
   <div v-else>Loading...</div>
 </template>
 
 <script lang="ts">
+import OrderPlanDialog from '@/components/OrderPlanDialog.vue';
 import SliderPanel from '@/components/SliderPanel.vue';
+import { defaultOrderPlanner, PlannedOrder } from '@/orderplan/orderplan';
+import { calcSliderChangeResult } from '@/util/sliderUtil';
 import { fetchTokens } from '@/util/tokenlist';
-import { getTokenBalance, TokenData } from '@/util/tokens';
+import { calcPercentageMap, getTokenBalance, TokenData } from '@/util/tokens';
 import { getTokenPrices } from '@/web3/uniswapService';
 import { web3Service } from '@/web3/web3Service';
 import { asyncComputed } from '@vueuse/core';
-import { BigNumber, utils } from 'ethers';
+import { BigNumber, FixedNumber } from 'ethers';
 import { defineComponent, ref, Ref, watchEffect } from 'vue';
 
 export default defineComponent({
-  setup(props) {
+  setup() {
     const tokenList = asyncComputed(() => fetchTokens(), []);
     const tokenData: Ref<TokenData[]> = ref([]);
+    const distribution: Ref<Record<string, number>> = ref({});
+    const startingDistribution: Ref<Record<string, number>> = ref({});
 
     // TODO: native ETH is not shown now (only WETH)
 
@@ -53,18 +65,46 @@ export default defineComponent({
               id: tokenInfo.address,
               name: tokenInfo.name,
               decimals: tokenInfo.decimals,
-              ownedAmount: parseFloat(utils.formatUnits(await balances[index], tokenInfo.decimals)),
+              ownedAmount: FixedNumber.fromValue(await balances[index], tokenInfo.decimals),
               value: parseFloat(tokenPrices[tokenInfo.address]?.derivedETH ?? '0.0') * multiplier,
               logoUri: tokenInfo.logoURI,
             };
           })
         )
-      ).sort((a, b) => b.value * b.ownedAmount - a.value * a.ownedAmount);
+      ).sort(
+        (a, b) => b.value * b.ownedAmount.toUnsafeFloat() - a.value * a.ownedAmount.toUnsafeFloat()
+      );
+      distribution.value = calcPercentageMap(tokenData.value);
+      startingDistribution.value = Object.assign({}, distribution.value);
     });
+
+    const orderVisible = ref(false);
+    const distributionText = ref('');
+    watchEffect(() => {
+      const result = calcSliderChangeResult(distribution.value, startingDistribution.value);
+      orderVisible.value = result.hasChanges;
+      distributionText.value = result.message;
+    });
+    const orderDialogVisible = ref(false);
+    const orderPlan: Ref<PlannedOrder[]> = ref([]);
+    const execute = () => {
+      orderPlan.value = defaultOrderPlanner.createPlan(tokenData.value, distribution.value);
+      orderDialogVisible.value = true;
+    };
+
     const state = web3Service.status();
-    return { state, tokenData };
+    return {
+      state,
+      tokenData,
+      distribution,
+      orderVisible,
+      distributionText,
+      execute,
+      orderDialogVisible,
+      orderPlan,
+    };
   },
-  components: { SliderPanel },
+  components: { SliderPanel, OrderPlanDialog },
 });
 </script>
 

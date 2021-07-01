@@ -9,7 +9,7 @@
     "codegen": "graphql-codegen --config codegen.yaml;graphql-codegen --config codegen_uniswap.yaml"
   },
   "dependencies": {
-    "@enzymefinance/protocol": "^2.0.7",
+    "@enzymefinance/protocol": "^2.0.9",
     "@metamask/detect-provider": "^1.2.0",
     "@uniswap/token-lists": "^1.0.0-beta.24",
     "@vueuse/core": "^5.0.3",
@@ -17,13 +17,13 @@
     "bootstrap": "^5.0.2",
     "core-js": "^3.6.5",
     "ethereum-multicall": "^2.5.1",
-    "ethers": "^5.3.1",
+    "ethers": "^5.4.0",
     "graphql": "^15.5.1",
     "graphql-request": "^3.4.0",
     "graphql-tag": "^2.12.4",
     "primeicons": "^4.1.0",
     "primevue": "^3.5.1",
-    "simple-uniswap-sdk": "^2.3.3",
+    "simple-uniswap-sdk": "^2.4.0",
     "vue": "^3.1.1",
     "vue-router": "^4.0.0-0"
   },
@@ -48,7 +48,7 @@
     "node-sass": "^4.12.0",
     "prettier": "^2.2.1",
     "sass-loader": "^8.0.2",
-    "typescript": "~4.3.4"
+    "typescript": "~4.3.5"
   },
   "eslintConfig": {
     "root": true,

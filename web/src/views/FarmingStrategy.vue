@@ -73,7 +73,7 @@ export default defineComponent({
           id: asset.id.toLowerCase(),
           name: asset.name,
           value: asset.price?.price ?? -1,
-          ownedAmount: 0.0,
+          ownedAmount: FixedNumber.from('0'),
           decimals: asset.decimals,
         }));
       return namesOnly;
@@ -101,10 +101,10 @@ export default defineComponent({
               // TODO: look up value on uniswap
               value = 1.0;
             }
-            let owned = 0.0;
+            let owned = token.ownedAmount;
             const ownedBigNumber = assetMap[token.id];
             if (ownedBigNumber) {
-              owned = FixedNumber.fromValue(ownedBigNumber, token.decimals).toUnsafeFloat();
+              owned = FixedNumber.fromValue(ownedBigNumber, token.decimals);
             }
             return {
               ...token,
