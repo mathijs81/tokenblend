@@ -188,8 +188,4 @@ export default defineComponent({
   width: 8rem;
   margin-bottom: 0.1rem;
 }
-.token-img {
-  width: 2rem;
-  height: 2rem;
-}
 </style>
