@@ -12,6 +12,13 @@ Sign up for an account at alchemy and get an API key for a dev/mainnet project. 
 pnpx hardhat node --fork https://eth-mainnet.alchemyapi.io/v2/[API-KEY] --fork-block-number 12727578
 ```
 
+You also need to create a special metamask configuration for this network:
+Settings > Networks > Add network
+* Name: whatever you want (e.g. local mainnet fork)
+* New RPC URL: http://localhost:8545/
+* Chain id: 1
+
+
 After that, run the following:
 ```
 pnpx hardhat run scripts/addManager.ts --network localhost

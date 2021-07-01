@@ -20,5 +20,12 @@ task("accounts", "Prints the list of accounts", async (args, hre) => {
  */
  export default {
   solidity: "0.8.4",
+  networks: {
+    hardhat: {
+      // We fork mainnet and for the simple-uniswap library to know
+      // that there's working multicall we need to have the same chainId
+      chainId: 1
+    }
+  }
 };
 
