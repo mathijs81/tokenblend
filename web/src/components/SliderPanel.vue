@@ -45,9 +45,8 @@
 
 <script lang="ts">
 import { calcPercentageMap, TokenData } from '@/util/tokens';
-import { computed, defineComponent, PropType, reactive, watch } from 'vue';
-import { utils } from 'ethers';
 import { debouncedWatch } from '@vueuse/core';
+import { computed, defineComponent, PropType, reactive, watch } from 'vue';
 
 function adjustRatios(
   before: Record<string, number>,

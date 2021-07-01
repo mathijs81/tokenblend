@@ -17,7 +17,7 @@
       </thead>
       <tbody>
         <template v-for="order in orderList" v-bind:key="order.sendAmount + order.fromToken.name">
-          <tr class="align-middle" :class="{ 'table-success': order.success}">
+          <tr class="align-middle" :class="{ 'table-success': order.success }">
             <td>{{ order.sendAmount.toString() }}</td>
             <td>
               <img
@@ -39,12 +39,34 @@
             <td class="text-center">
               <i class="pi pi-spin pi-spinner" v-if="order.inProgress" />
               <i v-else-if="order.success" class="pi pi-check" style="fontsize: 2rem" />
-              <button v-else class="btn btn-primary" @click="execute(order)">Execute</button>
+              <span v-else>
+                <button v-if="!isEnzyme" class="btn btn-primary" @click="viewBest(order)">
+                  View best
+                </button>
+                <button class="btn btn-primary" @click="execute(order)">Execute best</button>
+              </span>
+            </td>
+          </tr>
+          <tr v-if="order.options">
+            <td colspan="5">
+              <div v-for="option in order.options" v-bind:key="option.platform" class="row">
+                <div class="col-3">
+                  <img :src="platformLogo(option.platform)" class="platform-img" />
+                  {{ option.platform }}
+                </div>
+                <div v-if="option.inProgress" class="col-9 text-center">
+                  <i class="pi pi-spin pi-spinner" />
+                </div>
+                <template v-else>
+                  <div class="col-7">{{ formatResult(option.resultAmount) }}</div>
+                  <div class="col-2">TODO: button to execute</div>
+                </template>
+              </div>
             </td>
           </tr>
           <tr v-if="!order.success && order.message" class="table-danger">
             <td colspan="5" class="text-end">
-                {{order.message}}
+              {{ order.message }}
             </td>
           </tr>
         </template>
@@ -55,14 +77,29 @@
 
 <script lang="ts">
 import { PlannedOrder } from '@/orderplan/orderplan';
+import { compareFixed } from '@/util/numbers';
+import { paraswapService } from '@/web3/paraswapService';
 import { TransactionResult, uniswapService } from '@/web3/uniswapService';
 import { extractErrorMessage } from '@/web3/web3Service';
-import { defineComponent, PropType, ref, Ref, watchEffect } from 'vue';
+import { FixedNumber } from 'ethers';
+import { defineComponent, PropType, reactive, ref, Ref, watchEffect } from 'vue';
 
 interface TransactionInProgress {
   inProgress?: boolean;
 }
-type OrderWithResult = PlannedOrder & Partial<TransactionResult> & TransactionInProgress;
+interface Option {
+  platform: string;
+  inProgress: boolean;
+  message?: string;
+  resultAmount?: FixedNumber;
+}
+interface OrderOptions {
+  options?: Option[];
+}
+type OrderWithResult = PlannedOrder &
+  Partial<TransactionResult> &
+  TransactionInProgress &
+  OrderOptions;
 
 export default defineComponent({
   name: 'OrderPlanDialog',
@@ -86,6 +123,7 @@ export default defineComponent({
         if (props.isEnzyme) {
           executeFunction = (order) => uniswapService.executeForEnzyme(order);
         } else {
+          // TODO: find best with paraswap and execute the best.
           executeFunction = (order) => uniswapService.execute(order);
         }
         const result = await executeFunction(order);
@@ -101,6 +139,52 @@ export default defineComponent({
     };
 
     return { execute, orderList };
+  },
+  methods: {
+    async viewBest(order: OrderWithResult) {
+      const uniswapOption: Option = reactive({
+        platform: 'Uniswap',
+        inProgress: true,
+      });
+      const paraswapOption: Option = reactive({
+        platform: 'Paraswap',
+        inProgress: true,
+      });
+      order.options = [uniswapOption, paraswapOption];
+      const uniswapOutput = uniswapService.getPredictedOutput(order).then((output) => {
+        console.log(`got ${output.toString()}`);
+        uniswapOption.inProgress = false;
+        uniswapOption.resultAmount = FixedNumber.fromValue(output, order.toToken.decimals);
+      });
+      const paraswapOutput = paraswapService.getPredictedOutput(order).then((output) => {
+        console.log(`got ${output.toString()}`);
+        paraswapOption.inProgress = false;
+        paraswapOption.resultAmount = FixedNumber.fromValue(output, order.toToken.decimals);
+      });
+      await Promise.all([uniswapOutput, paraswapOutput]);
+      order.options.sort((a, b) => {
+        if (a.resultAmount !== undefined && b.resultAmount !== undefined) {
+          return -compareFixed(a.resultAmount, b.resultAmount);
+        } else if (a.resultAmount === undefined) {
+          if (b.resultAmount === undefined) {
+            return 0;
+          } else {
+            return 1;
+          }
+        } else {
+          return -1;
+        }
+      });
+    },
+    platformLogo(platform: string): string {
+      return require('@/assets/' + platform.toLowerCase() + '.png');
+    },
+    formatResult(result: FixedNumber): string {
+      if (result === undefined) {
+        return '---';
+      }
+      return result.toString();
+    },
   },
 });
 </script>

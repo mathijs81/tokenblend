@@ -1,5 +1,6 @@
 import { TokenData } from '@/util/tokens';
 import { FixedNumber } from 'ethers';
+import { fixedNum } from '@/util/numbers';
 
 export interface PlannedOrder {
   fromToken: TokenData;
@@ -12,11 +13,6 @@ export interface OrderPlanCreator {
     currentPortfolio: TokenData[],
     desiredDistribution: Record<string, number>
   ): PlannedOrder[];
-}
-
-function fixedNum(n: number) {
-  // This is the best way I could find, passing in number directly seems to always gives "underflow" error.
-  return FixedNumber.from(n.toString());
 }
 
 /**
@@ -66,10 +62,14 @@ class SimpleOrderPlanCreator implements OrderPlanCreator {
       ) {
         const sellFraction = currentFraction - desiredFraction;
         valueSold += sellFraction * totalValue;
+        let amount = fixedNum((sellFraction * totalValue) / token.value);
+        if (desiredFraction < 1e-6) {
+          amount = token.ownedAmount;
+        }
         orders.push({
           fromToken: token,
           toToken: switchTokenData,
-          sendAmount: fixedNum((sellFraction * totalValue) / token.value),
+          sendAmount: amount,
         });
       } else if (
         currentFraction - desiredFraction < -DIFFERENCE_THRESHOLD &&

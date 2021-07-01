@@ -21,6 +21,7 @@
     "graphql": "^15.5.1",
     "graphql-request": "^3.4.0",
     "graphql-tag": "^2.12.4",
+    "paraswap": "^4.19.1",
     "primeicons": "^4.1.0",
     "primevue": "^3.5.1",
     "simple-uniswap-sdk": "^2.4.0",

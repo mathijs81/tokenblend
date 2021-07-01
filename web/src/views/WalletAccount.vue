@@ -61,12 +61,17 @@ export default defineComponent({
         await Promise.all(
           tokens.map(async (tokenInfo) => {
             index++;
+            let value =
+              parseFloat(tokenPrices[tokenInfo.address]?.derivedETH ?? '0.0001') * multiplier;
+            if (value == 0.0) {
+              value = 0.0001 * multiplier;
+            }
             return {
               id: tokenInfo.address,
               name: tokenInfo.name,
               decimals: tokenInfo.decimals,
               ownedAmount: FixedNumber.fromValue(await balances[index], tokenInfo.decimals),
-              value: parseFloat(tokenPrices[tokenInfo.address]?.derivedETH ?? '0.0') * multiplier,
+              value: value,
               logoUri: tokenInfo.logoURI,
             };
           })

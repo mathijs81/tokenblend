@@ -1,6 +1,6 @@
 import { getSdk, Sdk, Token } from '@/data/uniswap_subgraph';
 import { PlannedOrder } from '@/orderplan/orderplan';
-import { reduceDecimals } from '@/util/numbers';
+import { fixedToBigNumber, reduceDecimals } from '@/util/numbers';
 import { BigNumber, FixedNumber, utils } from 'ethers';
 import { GraphQLClient } from 'graphql-request';
 import {
@@ -21,6 +21,7 @@ export interface TransactionResult {
 interface UniswapPlanning {
   fromAmount: BigNumber;
   minimummToAmount: BigNumber;
+  estimatedToAmount: BigNumber;
   path: string[];
   pair: UniswapPairFactory;
 }
@@ -29,6 +30,15 @@ function isTransactionResult(arg: UniswapPlanning | TransactionResult): arg is T
 }
 
 class UniswapService {
+  public async getPredictedOutput(order: PlannedOrder): Promise<BigNumber> {
+    const plan = await this.planUniswap(order, [UniswapVersion.v2, UniswapVersion.v3]);
+    if (isTransactionResult(plan)) {
+      throw new Error(plan.message);
+    } else {
+      return plan.estimatedToAmount;
+    }
+  }
+
   private async planUniswap(
     plannedOrder: PlannedOrder,
     versions: UniswapVersion[]
@@ -66,9 +76,9 @@ class UniswapService {
     const currentBalance = await factory.getFromTokenBalance();
     console.log(currentBalance);
     if (
-      utils
-        .parseUnits(formattedInput.toString(), factory.fromToken.decimals)
-        .gt(utils.parseUnits(currentBalance, factory.fromToken.decimals))
+      fixedToBigNumber(formattedInput, plannedOrder.fromToken.decimals).gt(
+        utils.parseUnits(currentBalance, plannedOrder.fromToken.decimals)
+      )
     ) {
       return { message: 'Trying to sell more than the portfolio has!', success: false };
     }
@@ -77,18 +87,18 @@ class UniswapService {
     console.log(result.bestRouteQuote);
     const fromBn = utils.parseUnits(formattedInput.toString(), plannedOrder.fromToken.decimals);
 
+    const outputFixed = FixedNumber.fromString(result.bestRouteQuote.expectedConvertQuote);
     // Allow a bit less tokens to come out of the swap, otherwise it fails too often
-    const targetOutput = FixedNumber.fromString(
-      result.bestRouteQuote.expectedConvertQuote
-    ).mulUnsafe(FixedNumber.from('0.99'));
-    const toBn = utils.parseUnits(
-      reduceDecimals(targetOutput, plannedOrder.toToken.decimals).toString(),
+    const minOutput = reduceDecimals(
+      outputFixed.mulUnsafe(FixedNumber.from('0.99')),
       plannedOrder.toToken.decimals
     );
+    const toBn = fixedToBigNumber(minOutput, plannedOrder.toToken.decimals);
 
     return {
       fromAmount: fromBn,
       minimummToAmount: toBn,
+      estimatedToAmount: fixedToBigNumber(outputFixed, plannedOrder.toToken.decimals),
       path: result.bestRouteQuote.routePathArray,
       pair: factory,
     };
