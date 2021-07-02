@@ -1,5 +1,12 @@
 <template>
   <div>
+    <Dropdown
+      v-model="selectedDistribution"
+      :options="distributions"
+      optionLabel="name"
+      placeholder="Select distribution"
+    />
+
     <table class="table table-striped table-sm">
       <thead>
         <tr>
@@ -47,8 +54,10 @@
 
 <script lang="ts">
 import { calcPercentageMap, TokenData } from '@/util/tokens';
-import { debouncedWatch } from '@vueuse/core';
-import { computed, defineComponent, PropType, reactive, watch } from 'vue';
+import { Distribution, getDistributions } from '@/util/tokenDistribution';
+import { asyncComputed, debouncedWatch } from '@vueuse/core';
+import { computed, defineComponent, PropType, reactive, Ref, ref, watch } from 'vue';
+import Dropdown from 'primevue/dropdown';
 
 function adjustRatios(
   before: Record<string, number>,
@@ -119,6 +128,7 @@ export default defineComponent({
     },
     modelValue: Object as PropType<Record<string, number>>,
   },
+  components: { Dropdown },
   setup(props, { emit }) {
     const percentageMap: Record<string, number> = reactive({});
     var wethContract = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
@@ -179,7 +189,18 @@ export default defineComponent({
       return value;
     });
 
-    return { percentageMap, totalPercentage, totalAmount };
+    const selectedDistribution: Ref<Distribution | null> = ref(null);
+    const distributions = asyncComputed(async () => getDistributions(props.tokenData));
+    watch(selectedDistribution, () => {
+      const values = selectedDistribution.value?.map;
+      if (values) {
+        Object.keys(percentageMap).forEach((key) => {
+          delete percentageMap[key];
+        });
+        Object.assign(percentageMap, values);
+      }
+    });
+    return { percentageMap, totalPercentage, totalAmount, selectedDistribution, distributions };
   },
   methods: {
     formatPrice(token: TokenData): string {

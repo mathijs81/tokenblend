@@ -53,7 +53,6 @@ export default defineComponent({
       const usdAddress = '0x6B175474E89094C44Da98b954EedeAC495271d0F'; // DAI stablecoin
       const tokenPriceMap = getTokenPrices(tokens.map((token) => token.address));
       const tokenPrices = await tokenPriceMap;
-
       const multiplier = 1.0 / (tokenPrices[usdAddress]?.derivedETH ?? 1.0);
 
       let index = -1;
@@ -69,11 +68,12 @@ export default defineComponent({
             return {
               id: tokenInfo.address,
               name: tokenInfo.name,
+              symbol: tokenInfo.symbol,
               decimals: tokenInfo.decimals,
               ownedAmount: FixedNumber.fromValue(await balances[index], tokenInfo.decimals),
               value: value,
               logoUri: tokenInfo.logoURI,
-            };
+            } as TokenData;
           })
         )
       ).sort(
