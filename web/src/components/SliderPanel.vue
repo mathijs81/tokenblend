@@ -13,7 +13,9 @@
       <tbody>
         <tr>
           <td><b>Total</b></td>
-          <td colspan="4" class="text-end">
+          <td colspan="2"></td>
+          <td>{{ formatValueNumber(totalAmount) }}</td>
+          <td class="text-end">
             {{ totalPercentage.toFixed(1) }}
           </td>
         </tr>
@@ -25,7 +27,7 @@
               >{{ token.name }}</a
             >
           </td>
-          <td>{{ formatPrice(token) }}</td>
+          <td :title="formatPriceLong(token)">{{ formatPrice(token) }}</td>
           <td>{{ formatOwned(token) }}</td>
           <td>{{ formatValue(token) }}</td>
           <td>
@@ -160,19 +162,31 @@ export default defineComponent({
       emit('update:modelValue', percentageMap);
     });
 
-    return { percentageMap, totalPercentage };
+    const totalAmount = computed(() => {
+      var value = 0.0;
+      for (let [, token] of Object.entries(props.tokenData)) {
+        value += token.ownedAmount.toUnsafeFloat() * token.value;
+      }
+      return value;
+    });
+
+    return { percentageMap, totalPercentage, totalAmount };
   },
   methods: {
     formatPrice(token: TokenData): string {
       return token.value.toFixed(1);
     },
-
+    formatPriceLong(token: TokenData): string {
+      return token.value.toString();
+    },
     formatOwned(token: TokenData): string {
       return token.ownedAmount.toUnsafeFloat().toString();
     },
-
     formatValue(token: TokenData): string {
-      return (token.ownedAmount.toUnsafeFloat() * token.value).toFixed(1);
+      return this.formatValueNumber(token.ownedAmount.toUnsafeFloat() * token.value);
+    },
+    formatValueNumber(num: number): string {
+      return num.toFixed(1);
     },
   },
 });
