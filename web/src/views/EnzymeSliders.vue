@@ -50,7 +50,7 @@ export default defineComponent({
     // there are very many tokens listed.
     const partialTokens: Ref<TokenData[]> = asyncComputed(async () => {
       const tokenRequestResult = await getTokens(web3Service.isMainnet());
-      const namesOnly: TokenData[] = tokenRequestResult.assets
+      const asTokenData: TokenData[] = tokenRequestResult.assets
         // not sure why, the bot example code also filters for this
         .filter((asset) => !asset.derivativeType)
         .map((asset) => ({
@@ -61,7 +61,7 @@ export default defineComponent({
           ownedAmount: FixedNumber.from('0'),
           decimals: asset.decimals,
         }));
-      return namesOnly;
+      return asTokenData;
     });
 
     const tokens: Ref<TokenData[]> = ref([]);
@@ -77,10 +77,10 @@ export default defineComponent({
       if (tokenList) {
         if (fund) {
           const assetMap = await trackAssets(fund.id, web3Service.getProvider());
-
+          const daiValue = tokenList.find(token => token.symbol == "DAI")?.value ?? 1.0;
           tokens.value = tokenList
             .map((token) => {
-              let value = token.value;
+              let value = token.value / daiValue;
               if (value < 0) {
                 // TODO: look up value on uniswap
                 value = 1.0;
