@@ -11,10 +11,10 @@
       <thead>
         <tr>
           <th scope="col">Token</th>
-          <th scope="col">Price</th>
-          <th scope="col">Current balance</th>
-          <th scope="col">Current value</th>
-          <th scope="col" class="text-center">Desired weight</th>
+          <th scope="col" class="text-end">Price</th>
+          <th scope="col" class="text-end">Current balance</th>
+          <th scope="col" class="text-end">Current value</th>
+          <th scope="col" class="text-end">Desired weight</th>
         </tr>
       </thead>
       <tbody>
