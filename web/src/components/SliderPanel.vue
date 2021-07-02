@@ -98,7 +98,11 @@ function adjustRatios(
         }
       }
       Object.keys(after).forEach((key) => {
-        after[key] = Math.max(0, Math.min(100, parseFloat(after[key].toFixed(1))));
+        let current = after[key];
+        if (isNaN(current)) {
+          current = 0;
+        }
+        after[key] = Math.max(0, Math.min(100, parseFloat(current.toFixed(1))));
       });
     } else {
       break;
@@ -117,6 +121,7 @@ export default defineComponent({
   },
   setup(props, { emit }) {
     const percentageMap: Record<string, number> = reactive({});
+    var wethContract = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
     watch(
       () => [props.tokenData, props.modelValue],
       () => {
@@ -127,6 +132,12 @@ export default defineComponent({
         } else {
           Object.assign(percentageMap, calcPercentageMap(props.tokenData));
         }
+        if (
+          percentageMap[wethContract] === undefined &&
+          wethContract.toLowerCase() in percentageMap
+        ) {
+          wethContract = wethContract.toLowerCase();
+        }
         for (let [, token] of Object.entries(props.tokenData)) {
           if (!(token.id in percentageMap)) {
             percentageMap[token.id] = 0.0;
@@ -134,8 +145,6 @@ export default defineComponent({
         }
       }
     );
-
-    const wethContract = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
     const prevMap = {};
     const normalize = () => {
       adjustRatios(prevMap, percentageMap, wethContract);
@@ -174,7 +183,10 @@ export default defineComponent({
   },
   methods: {
     formatPrice(token: TokenData): string {
-      return token.value.toFixed(1);
+      if (token.value === 0.0) {
+        return '---';
+      }
+      return token.value.toFixed(5);
     },
     formatPriceLong(token: TokenData): string {
       return token.value.toString();

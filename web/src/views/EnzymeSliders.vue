@@ -51,8 +51,8 @@ export default defineComponent({
     const partialTokens: Ref<TokenData[]> = asyncComputed(async () => {
       const tokenRequestResult = await getTokens(web3Service.isMainnet());
       const namesOnly: TokenData[] = tokenRequestResult.assets
-        // // not sure why, the bot example code also filters for this
-        // .filter((asset) => !asset.derivativeType)
+        // not sure why, the bot example code also filters for this
+        .filter((asset) => !asset.derivativeType)
         .map((asset) => ({
           id: asset.id.toLowerCase(),
           name: asset.name,
