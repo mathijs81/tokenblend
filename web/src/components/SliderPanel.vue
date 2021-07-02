@@ -21,7 +21,7 @@
         <tr>
           <td><b>Total</b></td>
           <td colspan="2"></td>
-          <td>{{ formatValueNumber(totalAmount) }}</td>
+          <td class="text-end">{{ formatDollars(totalAmount) }}</td>
           <td class="text-end">
             {{ totalPercentage.toFixed(1) }}
           </td>
@@ -34,13 +34,13 @@
               >{{ token.name }}</a
             >
           </td>
-          <td :title="formatPriceLong(token)">{{ formatPrice(token) }}</td>
-          <td>{{ formatOwned(token) }}</td>
-          <td>{{ formatValue(token) }}</td>
-          <td>
-            <div class="d-flex flex-column align-items-center">
+          <td :title="formatPriceLong(token)" class="text-end">{{ formatPrice(token) }}</td>
+          <td class="text-end">{{ formatOwned(token) }}</td>
+          <td class="text-end">{{ formatValue(token) }}</td>
+          <td class="text-end">
+            <div class="d-flex flex-column align-items-end">
               <InputText
-                :modelValue="percentageMap[token.id]"
+                :modelValue="formatMaxDigits(percentageMap[token.id])"
                 @update:modelValue="percentageMap[token.id] = parseFloat($event)"
               />
               <Slider v-model="percentageMap[token.id]" />
@@ -58,6 +58,7 @@ import { Distribution, getDistributions } from '@/util/tokenDistribution';
 import { asyncComputed, debouncedWatch } from '@vueuse/core';
 import { computed, defineComponent, PropType, reactive, Ref, ref, watch } from 'vue';
 import Dropdown from 'primevue/dropdown';
+import { numberMixin } from '@/util/numbers';
 
 function adjustRatios(
   before: Record<string, number>,
@@ -111,7 +112,7 @@ function adjustRatios(
         if (isNaN(current)) {
           current = 0;
         }
-        after[key] = Math.max(0, Math.min(100, parseFloat(current.toFixed(1))));
+        after[key] = Math.max(0, Math.min(100, parseFloat(current.toFixed(3))));
       });
     } else {
       break;
@@ -207,21 +208,19 @@ export default defineComponent({
       if (token.value === 0.0) {
         return '---';
       }
-      return token.value.toFixed(5);
+      return this.formatDollarPrice(token.value);
     },
     formatPriceLong(token: TokenData): string {
       return token.value.toString();
     },
     formatOwned(token: TokenData): string {
-      return token.ownedAmount.toUnsafeFloat().toString();
+      return this.formatMaxDigits(token.ownedAmount.toUnsafeFloat());
     },
     formatValue(token: TokenData): string {
-      return this.formatValueNumber(token.ownedAmount.toUnsafeFloat() * token.value);
-    },
-    formatValueNumber(num: number): string {
-      return num.toFixed(1);
+      return this.formatDollars(token.ownedAmount.toUnsafeFloat() * token.value);
     },
   },
+  mixins: [numberMixin],
 });
 </script>
 <style scoped>

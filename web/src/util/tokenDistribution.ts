@@ -11,7 +11,7 @@ export interface Distribution {
 export async function getDistributions(token: TokenData[]): Promise<Distribution[]> {
   const map: Record<string, number> = {};
   token.forEach((t) => {
-    map[t.id] = 1;
+    map[t.id] = 100.0 / token.length;
   });
   const equalWeighted = {
     name: 'All Equal',
@@ -22,7 +22,7 @@ export async function getDistributions(token: TokenData[]): Promise<Distribution
   token
     .filter((it) => it.symbol == 'WETH' || it.symbol == 'BAT')
     .forEach((t) => {
-      filteredMap[t.id] = 1;
+      filteredMap[t.id] = 50;
     });
   const filtered = {
     name: 'Only ETH and BAT',

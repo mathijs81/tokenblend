@@ -38,3 +38,41 @@ export function reduceDecimals(n: FixedNumber, decimals: number): FixedNumber {
 export function fixedToBigNumber(n: FixedNumber, decimals: number): BigNumber {
   return utils.parseUnits(n.toString(), decimals);
 }
+
+export function formatMaxDigits(n: number, digits = 2): string {
+  if (n === undefined) {
+    return '---';
+  }
+  return reduceDecimalString(n.toString(), digits);
+}
+
+export const numberMixin = {
+  methods: {
+    formatMaxDigits(n: number, digits = 2): string {
+      return formatMaxDigits(n, digits);
+    },
+    formatDollars(n: number, maxDigits = 2): string {
+      return '$ ' + formatMaxDigits(n, maxDigits);
+    },
+    formatDollarPrice(n: number): string {
+      if (n === undefined) {
+        return '---';
+      }
+      if (n >= 10) {
+        return this.formatDollars(n);
+      } else if (n >= 1) {
+        return this.formatDollars(n, 3);
+      } else if (n < 1e-8) {
+        return '<< 0.001';
+      } else {
+        let k = 1,
+          digits = 0;
+        while (k > n) {
+          k /= 10;
+          digits++;
+        }
+        return '$ ' + formatMaxDigits(n, digits + 2);
+      }
+    },
+  },
+};
