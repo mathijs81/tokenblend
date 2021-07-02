@@ -17,6 +17,10 @@ function reduceDecimalString(value: string, decimals: number): string {
 export function compareFixed(a: FixedNumber, b: FixedNumber): number {
   const bn1 = fixedToBigNumber(a, 18);
   const bn2 = fixedToBigNumber(b, 18);
+  return compareBignumber(bn1, bn2);
+}
+
+export function compareBignumber(bn1: BigNumber, bn2: BigNumber): number {
   if (bn1.gt(bn2)) {
     return 1;
   } else if (bn1.eq(bn2)) {

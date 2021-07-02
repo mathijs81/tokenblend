@@ -11,6 +11,7 @@ import {
   UniswapVersion,
 } from 'simple-uniswap-sdk';
 import { enzymeService } from './enzymeService';
+import { PredictedOutput } from './paraswapService';
 import { web3Service } from './web3Service';
 
 export interface TransactionResult {
@@ -30,12 +31,12 @@ function isTransactionResult(arg: UniswapPlanning | TransactionResult): arg is T
 }
 
 class UniswapService {
-  public async getPredictedOutput(order: PlannedOrder): Promise<BigNumber> {
+  public async getPredictedOutput(order: PlannedOrder): Promise<PredictedOutput> {
     const plan = await this.planUniswap(order, [UniswapVersion.v2, UniswapVersion.v3]);
     if (isTransactionResult(plan)) {
       throw new Error(plan.message);
     } else {
-      return plan.estimatedToAmount;
+      return { predictedOutput: plan.estimatedToAmount };
     }
   }
 
