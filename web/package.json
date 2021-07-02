@@ -24,7 +24,7 @@
     "paraswap": "^4.19.1",
     "primeicons": "^4.1.0",
     "primevue": "^3.5.1",
-    "simple-uniswap-sdk": "^2.4.0",
+    "simple-uniswap-sdk": "^2.5.0",
     "vue": "^3.1.1",
     "vue-router": "^4.0.0-0"
   },

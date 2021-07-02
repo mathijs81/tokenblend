@@ -36,7 +36,7 @@ specifiers:
   primeicons: ^4.1.0
   primevue: ^3.5.1
   sass-loader: ^8.0.2
-  simple-uniswap-sdk: ^2.4.0
+  simple-uniswap-sdk: ^2.5.0
   typescript: ~4.3.5
   vue: ^3.1.1
   vue-router: ^4.0.0-0
@@ -57,7 +57,7 @@ dependencies:
   paraswap: 4.19.1_typescript@4.3.5
   primeicons: 4.1.0
   primevue: 3.5.1
-  simple-uniswap-sdk: 2.4.0
+  simple-uniswap-sdk: 2.5.0
   vue: 3.1.1
   vue-router: 4.0.10_vue@3.1.1
 
@@ -6593,19 +6593,6 @@ packages:
     peerDependenciesMeta:
       debug:
         optional: true
-    dev: false
-
-  /follow-redirects/1.14.1_debug@4.3.1:
-    resolution: {integrity: sha512-HWqDgT7ZEkqRzBvc2s64vSZ/hfOceEol3ac/7tKwzuvEyWx3/4UegXh5oBOIotkGsObyk3xznnSRVADBgWSQVg==}
-    engines: {node: '>=4.0'}
-    peerDependencies:
-      debug: '*'
-    peerDependenciesMeta:
-      debug:
-        optional: true
-    dependencies:
-      debug: 4.3.1
-    dev: true
 
   /for-in/1.0.2:
     resolution: {integrity: sha1-gQaNKVqBQuwKxybG4iAMMPttXoA=}
@@ -7396,7 +7383,7 @@ packages:
     engines: {node: '>=8.0.0'}
     dependencies:
       eventemitter3: 4.0.7
-      follow-redirects: 1.14.1_debug@4.3.1
+      follow-redirects: 1.14.1
       requires-port: 1.0.0
     transitivePeerDependencies:
       - debug
@@ -11224,8 +11211,8 @@ packages:
       is-arrayish: 0.3.2
     dev: true
 
-  /simple-uniswap-sdk/2.4.0:
-    resolution: {integrity: sha512-HK/U0jg8orMlAbgpz6aor1BjBjyDNq1P+LUWwKgEed+PItnd7IrLiOpyZN4LzQ6T0kpE2B/tRQZ3/r9r4beDfA==}
+  /simple-uniswap-sdk/2.5.0:
+    resolution: {integrity: sha512-DlTCG29mARuuj91RlasuQQ9K/C0CjkRplK/T5Bz1zkHuU+ehL1WKoFCzLIpWRGeocgaDdPWPNuMfAnfBxXjmIQ==}
     dependencies:
       bignumber.js: 9.0.1
       ethereum-abi-types-generator: 1.1.7
