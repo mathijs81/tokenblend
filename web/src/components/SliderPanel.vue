@@ -195,7 +195,7 @@ export default defineComponent({
       const values = selectedDistribution.value?.map;
       if (values) {
         Object.keys(percentageMap).forEach((key) => {
-          delete percentageMap[key];
+          percentageMap[key] = 0.0;
         });
         Object.assign(percentageMap, values);
       }
