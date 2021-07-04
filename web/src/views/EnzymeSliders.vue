@@ -77,7 +77,7 @@ export default defineComponent({
       if (tokenList) {
         if (fund) {
           const assetMap = await trackAssets(fund.id, web3Service.getProvider());
-          const daiValue = tokenList.find(token => token.symbol == "DAI")?.value ?? 1.0;
+          const daiValue = tokenList.find((token) => token.symbol == 'DAI')?.value ?? 1.0;
           tokens.value = tokenList
             .map((token) => {
               let value = token.value / daiValue;

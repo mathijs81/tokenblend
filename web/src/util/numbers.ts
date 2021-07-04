@@ -38,6 +38,9 @@ export function reduceDecimals(n: FixedNumber, decimals: number): FixedNumber {
 export function fixedToBigNumber(n: FixedNumber, decimals: number): BigNumber {
   return utils.parseUnits(n.toString(), decimals);
 }
+export function bigNumberToFixed(n: BigNumber, decimals: number): FixedNumber {
+  return FixedNumber.from(utils.formatUnits(n, decimals), decimals);
+}
 
 export function formatMaxDigits(n: number, digits = 2): string {
   if (n === undefined) {

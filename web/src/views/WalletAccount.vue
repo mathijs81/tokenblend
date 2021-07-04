@@ -25,10 +25,12 @@ import { calcSliderChangeResult } from '@/util/sliderUtil';
 import { fetchTokens } from '@/util/tokenlist';
 import { calcPercentageMap, getTokenBalance, TokenData } from '@/util/tokens';
 import { getTokenPrices } from '@/web3/uniswapService';
+import { idleService } from '@/web3/idleService';
 import { web3Service } from '@/web3/web3Service';
 import { asyncComputed } from '@vueuse/core';
 import { BigNumber, FixedNumber } from 'ethers';
 import { defineComponent, ref, Ref, watchEffect } from 'vue';
+import { reduceTokens } from '@/util/stakedTokens';
 
 export default defineComponent({
   setup() {
@@ -36,12 +38,14 @@ export default defineComponent({
     const tokenData: Ref<TokenData[]> = ref([]);
     const distribution: Ref<Record<string, number>> = ref({});
     const startingDistribution: Ref<Record<string, number>> = ref({});
+    const idleTokenList = asyncComputed(() => idleService.getTokenData());
 
     // TODO: native ETH is not shown now (only WETH)
 
     watchEffect(async () => {
       const account = web3Service.status().address;
       const tokens = tokenList.value;
+      const idleTokens = idleTokenList.value;
       // Look up all balances and create TokenData
       const balances = tokens.map((token) => {
         if (account) {
@@ -56,27 +60,30 @@ export default defineComponent({
       const multiplier = 1.0 / (tokenPrices[usdAddress]?.derivedETH ?? 1.0);
 
       let index = -1;
-      tokenData.value = (
-        await Promise.all(
-          tokens.map(async (tokenInfo) => {
-            index++;
-            let value =
-              parseFloat(tokenPrices[tokenInfo.address]?.derivedETH ?? '0.0001') * multiplier;
-            if (value == 0.0) {
-              value = 0.0001 * multiplier;
-            }
-            return {
-              id: tokenInfo.address,
-              name: tokenInfo.name,
-              symbol: tokenInfo.symbol,
-              decimals: tokenInfo.decimals,
-              ownedAmount: FixedNumber.fromValue(await balances[index], tokenInfo.decimals),
-              value: value,
-              logoUri: tokenInfo.logoURI,
-            } as TokenData;
-          })
-        )
-      ).sort(
+      let basicTokens = await Promise.all(
+        tokens.map(async (tokenInfo) => {
+          index++;
+          let value =
+            parseFloat(tokenPrices[tokenInfo.address]?.derivedETH ?? '0.0001') * multiplier;
+          if (value == 0.0) {
+            value = 0.0001 * multiplier;
+          }
+          return {
+            id: tokenInfo.address,
+            name: tokenInfo.name,
+            symbol: tokenInfo.symbol,
+            decimals: tokenInfo.decimals,
+            ownedAmount: FixedNumber.fromValue(await balances[index], tokenInfo.decimals),
+            value: value,
+            logoUri: tokenInfo.logoURI,
+          } as TokenData;
+        })
+      );
+      if (basicTokens.length > 0) {
+        basicTokens.push(...idleTokens);
+        basicTokens = reduceTokens(basicTokens);
+      }
+      tokenData.value = basicTokens.sort(
         (a, b) => b.value * b.ownedAmount.toUnsafeFloat() - a.value * a.ownedAmount.toUnsafeFloat()
       );
       distribution.value = calcPercentageMap(tokenData.value);

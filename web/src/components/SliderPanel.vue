@@ -35,7 +35,7 @@
             >
           </td>
           <td :title="formatPriceLong(token)" class="text-end">{{ formatPrice(token) }}</td>
-          <td class="text-end">{{ formatOwned(token) }}</td>
+          <td class="text-end" :title="tokenTitle(token)">{{ formatOwned(token) }}</td>
           <td class="text-end">{{ formatValue(token) }}</td>
           <td class="text-end">
             <div class="d-flex flex-column align-items-end">
@@ -59,6 +59,7 @@ import { asyncComputed, debouncedWatch } from '@vueuse/core';
 import { computed, defineComponent, PropType, reactive, Ref, ref, watch } from 'vue';
 import Dropdown from 'primevue/dropdown';
 import { numberMixin } from '@/util/numbers';
+import { StakedToken } from '@/util/stakedTokens';
 
 function adjustRatios(
   before: Record<string, number>,
@@ -218,6 +219,9 @@ export default defineComponent({
     },
     formatValue(token: TokenData): string {
       return this.formatDollars(token.ownedAmount.toUnsafeFloat() * token.value);
+    },
+    tokenTitle(token: TokenData): string {
+      return 'description' in token ? (token as StakedToken).description : '';
     },
   },
   mixins: [numberMixin],

@@ -4,7 +4,7 @@ import { BigNumber, Contract, FixedNumber } from 'ethers';
 export interface TokenData {
   id: string;
   name: string;
-  symbol?: string;
+  symbol: string;
   decimals: number;
   ownedAmount: FixedNumber;
   value: number;

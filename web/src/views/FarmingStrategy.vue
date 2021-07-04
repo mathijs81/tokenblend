@@ -72,6 +72,7 @@ export default defineComponent({
         .map((asset) => ({
           id: asset.id.toLowerCase(),
           name: asset.name,
+          symbol: asset.symbol,
           value: asset.price?.price ?? -1,
           ownedAmount: FixedNumber.from('0'),
           decimals: asset.decimals,
