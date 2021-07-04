@@ -7,9 +7,10 @@
         <button class="btn btn-primary float-end" @click="execute" v-if="orderVisible">
           Execute
         </button>
+        <button class="btn btn-primary float-end" @click="testdeposit">test deposit</button>
       </div>
       <div class="col">
-        <SliderPanel :tokenData="tokenData" v-model="distribution" />
+        <SliderPanel :tokenData="tokenData" v-model="distribution" :withStaking="true" />
       </div>
     </div>
     <OrderPlanDialog v-model:visible="orderDialogVisible" :orderPlan="orderPlan" />
@@ -79,7 +80,7 @@ export default defineComponent({
           } as TokenData;
         })
       );
-      if (basicTokens.length > 0) {
+      if (basicTokens.length > 0 && idleTokens) {
         basicTokens.push(...idleTokens);
         basicTokens = reduceTokens(basicTokens);
       }
@@ -117,6 +118,18 @@ export default defineComponent({
     };
   },
   components: { SliderPanel, OrderPlanDialog },
+  methods: {
+    async testdeposit() {
+      const weth = this.tokenData.find((token) => token.symbol === 'WETH')!;
+      console.log(
+        await idleService.depositToken(
+          weth,
+          web3Service.status().address!,
+          FixedNumber.from(1.0, 18)
+        )
+      );
+    },
+  },
 });
 </script>
 

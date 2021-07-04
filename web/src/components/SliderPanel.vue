@@ -18,7 +18,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
+        <tr class="align-middle">
           <td><b>Total</b></td>
           <td colspan="2"></td>
           <td class="text-end">{{ formatDollars(totalAmount) }}</td>
@@ -27,7 +27,7 @@
           </td>
         </tr>
 
-        <tr v-for="token in tokenData" v-bind:key="token.name">
+        <tr v-for="token in tokenData" v-bind:key="token.name" class="align-middle">
           <td>
             <img v-if="token.logoUri" :src="token.logoUri" class="token-img me-2" /><a
               :title="token.id"
@@ -35,7 +35,35 @@
             >
           </td>
           <td :title="formatPriceLong(token)" class="text-end">{{ formatPrice(token) }}</td>
-          <td class="text-end" :title="tokenTitle(token)">{{ formatOwned(token) }}</td>
+          <td class="text-end" :title="tokenTitle(token)">
+            {{ formatOwned(token) }}
+            <span v-if="withStaking" class="staking">
+              <span v-if="isStakedToken(token)">
+                <svg viewBox="0 0 42 42" class="staking-donut">
+                  <circle
+                    class="donut-ring"
+                    cx="21"
+                    cy="21"
+                    r="15.91549430918954"
+                    fill="transparent"
+                    stroke="#ffd76e"
+                    stroke-width="5"
+                  ></circle>
+                  <circle
+                    class="donut-segment"
+                    cx="21"
+                    cy="21"
+                    r="15.91549430918954"
+                    fill="transparent"
+                    stroke="#0c58c2"
+                    stroke-width="5"
+                    :stroke-dasharray="getStroke(token)"
+                    stroke-dashoffset="0"
+                  ></circle></svg
+                ><img src="@/assets/idle.png" class="staking-img" />
+              </span>
+            </span>
+          </td>
           <td class="text-end">{{ formatValue(token) }}</td>
           <td class="text-end">
             <div class="d-flex flex-column align-items-end">
@@ -125,10 +153,11 @@ export default defineComponent({
   name: 'SliderPanel',
   props: {
     tokenData: {
-      type: Array as PropType<TokenData[]>,
+      type: Array as PropType<TokenData[] | StakedToken[]>,
       required: true,
     },
     modelValue: Object as PropType<Record<string, number>>,
+    withStaking: Boolean,
   },
   components: { Dropdown },
   setup(props, { emit }) {
@@ -223,6 +252,20 @@ export default defineComponent({
     tokenTitle(token: TokenData): string {
       return 'description' in token ? (token as StakedToken).description : '';
     },
+    isStakedToken(token: TokenData): boolean {
+      return (
+        'hasStaked' in token &&
+        (token as StakedToken).hasStaked &&
+        token.ownedAmount.toUnsafeFloat() > 0
+      );
+    },
+    getStroke(_token: TokenData): string {
+      const token = _token as StakedToken;
+      // Needs to be %, 100 - %
+      const stakedPercentage =
+        (token.stakedUnderlyingValue.toUnsafeFloat() / token.ownedAmount.toUnsafeFloat()) * 100;
+      return `${stakedPercentage.toFixed(3)} ${(100 - stakedPercentage).toFixed(3)}`;
+    },
   },
   mixins: [numberMixin],
 });
@@ -236,5 +279,24 @@ export default defineComponent({
 .p-slider-horizontal {
   width: 8rem;
   margin-bottom: 0.1rem;
+}
+.staking {
+  position: relative;
+  text-align: center;
+  width: 2rem;
+  display: inline-block;
+}
+.staking-donut {
+  width: 1.8rem;
+  height: 1.8rem;
+}
+.staking-img {
+  position: absolute;
+  margin: auto;
+  height: 0.8rem;
+  width: 0.8rem;
+  left: 0;
+  right: 0;
+  margin-top: 0.5rem;
 }
 </style>

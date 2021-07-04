@@ -4,6 +4,7 @@ import { FixedNumber } from 'ethers';
 export interface StakedToken extends TokenData {
   stakedUnderlyingValue: FixedNumber;
   description: string;
+  hasStaked: boolean;
 }
 
 export function reduceTokens(allTokens: TokenData[]): StakedToken[] {
@@ -36,6 +37,7 @@ export function reduceTokens(allTokens: TokenData[]): StakedToken[] {
       ...nonStakedItem,
       stakedUnderlyingValue: FixedNumber.from(0.0),
       description: `${nonStakedItem.ownedAmount} ${symbol}`,
+      hasStaked: false,
     };
     // Add up the stakedTokens
     for (const _stakedToken of tokenArray) {
@@ -48,6 +50,7 @@ export function reduceTokens(allTokens: TokenData[]): StakedToken[] {
         stakedToken.stakedUnderlyingValue
       );
       newToken.description += '\n' + stakedToken.description;
+      newToken.hasStaked = true;
     }
     result.push(newToken);
   }

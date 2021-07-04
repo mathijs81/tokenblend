@@ -1,8 +1,9 @@
-import { bigNumberToFixed } from '@/util/numbers';
+import { bigNumberToFixed, fixedToBigNumber, formatMaxDigits } from '@/util/numbers';
 import { StakedToken } from '@/util/stakedTokens';
-import { getTokenBalance } from '@/util/tokens';
+import { getTokenAllowance, getTokenBalance, tokenApprove, TokenData } from '@/util/tokens';
 import { BigNumber, Contract, FixedNumber, utils } from 'ethers';
 import idleTokenAbi from './IdleToken.json';
+import { TransactionResult } from './uniswapService';
 import { web3Service } from './web3Service';
 
 const idleAddresses = {
@@ -12,9 +13,20 @@ const idleAddresses = {
   WBTC: '0x8C81121B15197fA0eEaEE1DC75533419DcfD3151',
   WETH: '0xC8E6CA6E96a326dC448307A5fDE90a0b21fd7f80',
 };
+const symbols = new Set<string>(Object.keys(idleAddresses));
 
 // Staking through idle.finance
 class IdleService {
+  private getContract(symbol: string, withSigner: boolean): Contract {
+    const address = idleAddresses[symbol as keyof typeof idleAddresses];
+    // TODO: cache contract creation?
+    return new Contract(
+      address,
+      idleTokenAbi,
+      withSigner ? web3Service.getSigner() : web3Service.getProvider()
+    );
+  }
+
   public async getTokenData(): Promise<StakedToken[]> {
     const address = web3Service.status().address;
     if (!address) {
@@ -36,14 +48,16 @@ class IdleService {
         const decimals = 18; // 4-Jul-2021: the 5 addresses we use all have 18 as decimals.
         // For future, better to look it up
         index++;
-        const owned = bigNumberToFixed(balanceMap[index], decimals);
+        const ownedBn = balanceMap[index];
+        const owned = bigNumberToFixed(ownedBn, decimals);
         let value = FixedNumber.from(0.0);
-        if (balanceMap[index].gt(BigNumber.from(0))) {
-          const contract = new Contract(address, idleTokenAbi, web3Service.getProvider());
+        if (ownedBn.gt(BigNumber.from(0))) {
+          const contract = this.getContract(symbol, false);
           const tokenPrice: BigNumber = await contract.tokenPrice();
           value = bigNumberToFixed(tokenPrice, decimals);
-          console.log(owned, value);
+          console.log(owned.toString(), value.toString());
         }
+        const stakedValue = owned.mulUnsafe(value);
         return {
           id: address,
           name: symbol,
@@ -51,11 +65,51 @@ class IdleService {
           decimals: decimals,
           ownedAmount: owned,
           value: value.toUnsafeFloat(),
-          stakedUnderlyingValue: owned.mulUnsafe(value),
-          description: `${value} Staked ${symbol} on idle.finance`,
+          stakedUnderlyingValue: stakedValue,
+          description: `${formatMaxDigits(
+            stakedValue.toUnsafeFloat(),
+            3
+          )} deposited ${symbol} on idle.finance`,
+          hasStaked: true,
         };
       })
     );
+  }
+
+  public supportedSymbols(): Set<string> {
+    return symbols;
+  }
+
+  public async depositToken(
+    token: TokenData,
+    accountAddress: string,
+    amount: FixedNumber
+  ): Promise<TransactionResult> {
+    const symbol = token.symbol;
+    if (!(symbol in idleAddresses)) {
+      throw new Error(`${symbol} not present in idle-supported symbols`);
+    }
+    const contractAddress = idleAddresses[symbol as keyof typeof idleAddresses];
+    const contract = this.getContract(symbol, true);
+    const amountBn = fixedToBigNumber(amount, token.decimals);
+
+    // Check if allowance is high enough
+    const allowance = await getTokenAllowance(token.id, accountAddress, contractAddress);
+    if (amountBn.gt(allowance)) {
+      // TODO: something smarter / better than unlimited approval
+      const unlimitedAllowance = BigNumber.from(2).pow(256).sub(1);
+      const ok = await tokenApprove(token.id, contractAddress, unlimitedAllowance);
+      console.log('token approve: ' + ok);
+    }
+    console.log(amountBn, amountBn.toString());
+    const result = await contract.mintIdleToken(amountBn, true, accountAddress);
+    console.log(result);
+    console.log(result.wait());
+
+    return {
+      message: 'Success',
+      success: true,
+    };
   }
 }
 
