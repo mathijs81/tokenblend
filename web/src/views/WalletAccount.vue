@@ -1,5 +1,20 @@
 <template>
   <div v-if="state.connected">
+    <div v-if="noFunds" class="alert alert-warning">
+      You have no balance in ERC-20 tokens (ETH needs to be converted to WETH first).
+      <a
+        href="https://app.uniswap.org/#/swap?outputCurrency=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&inputCurrency=ETH"
+        target="_new"
+        >Get WETH</a
+      >
+    </div>
+    <a
+      v-else
+      class="float-end"
+      href="https://app.uniswap.org/#/swap?outputCurrency=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&inputCurrency=ETH"
+      target="_new"
+      >Get WETH</a
+    >
     <h2>{{ state.address }}</h2>
     <div class="row">
       <div>
@@ -29,7 +44,7 @@ import { idleService } from '@/web3/idleService';
 import { web3Service } from '@/web3/web3Service';
 import { asyncComputed } from '@vueuse/core';
 import { BigNumber, FixedNumber } from 'ethers';
-import { defineComponent, ref, Ref, watchEffect } from 'vue';
+import { computed, defineComponent, ref, Ref, watchEffect } from 'vue';
 import { reduceTokens, wrapDeposits } from '@/util/stakedTokens';
 
 export default defineComponent({
@@ -89,6 +104,11 @@ export default defineComponent({
       distribution.value = calcPercentageMap(tokenData.value);
       startingDistribution.value = Object.assign({}, distribution.value);
     });
+    const noFunds = computed(() => {
+      let value = 0.0;
+      tokenData.value.forEach((token) => (value += token.ownedAmount.toUnsafeFloat()));
+      return value < 1e-6;
+    });
 
     const orderVisible = ref(false);
     const distributionText = ref('');
@@ -118,6 +138,7 @@ export default defineComponent({
       execute,
       orderDialogVisible,
       orderPlan,
+      noFunds,
     };
   },
   components: { SliderPanel, OrderPlanDialog },

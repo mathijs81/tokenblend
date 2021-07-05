@@ -1,6 +1,6 @@
-import { createRouter, createWebHashHistory, createWebHistory, RouteRecordRaw } from 'vue-router';
-import Home from '../views/Home.vue';
+import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
 import EnzymeAccount from '../views/EnzymeAccount.vue';
+import Home from '../views/Home.vue';
 import WalletAccount from '../views/WalletAccount.vue';
 
 const routes: Array<RouteRecordRaw> = [
