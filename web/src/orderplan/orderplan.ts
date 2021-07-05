@@ -2,10 +2,17 @@ import { TokenData } from '@/util/tokens';
 import { FixedNumber } from 'ethers';
 import { fixedNum } from '@/util/numbers';
 
+export enum OrderType {
+  SWAP,
+  DEPOSIT,
+  REDEEM,
+}
+
 export interface PlannedOrder {
   fromToken: TokenData;
   toToken: TokenData;
   sendAmount: FixedNumber;
+  ordertype: OrderType;
 }
 
 export interface OrderPlanCreator {
@@ -56,32 +63,32 @@ class SimpleOrderPlanCreator implements OrderPlanCreator {
     currentPortfolio.forEach((token) => {
       const currentFraction = (token.ownedAmount.toUnsafeFloat() * token.value) / totalValue;
       const desiredFraction = (desiredDistribution[token.id] ?? 0.0) / 100;
-      if (
-        currentFraction - desiredFraction > DIFFERENCE_THRESHOLD &&
-        token.id != switchTokenData.id
-      ) {
+      if (currentFraction - desiredFraction > DIFFERENCE_THRESHOLD) {
         const sellFraction = currentFraction - desiredFraction;
         valueSold += sellFraction * totalValue;
         let amount = fixedNum((sellFraction * totalValue) / token.value);
         if (desiredFraction < 1e-6) {
           amount = token.ownedAmount;
         }
-        orders.push({
-          fromToken: token,
-          toToken: switchTokenData,
-          sendAmount: amount,
-        });
-      } else if (
-        currentFraction - desiredFraction < -DIFFERENCE_THRESHOLD &&
-        token.id != switchTokenData.id
-      ) {
+        if (token.id != switchTokenData.id) {
+          orders.push({
+            fromToken: token,
+            toToken: switchTokenData,
+            sendAmount: amount,
+            ordertype: OrderType.SWAP,
+          });
+        }
+      } else if (currentFraction - desiredFraction < -DIFFERENCE_THRESHOLD) {
         const buyFraction = desiredFraction - currentFraction;
         valueBought += buyFraction * totalValue;
-        buyOrders.push({
-          fromToken: switchTokenData,
-          toToken: token,
-          sendAmount: fixedNum((buyFraction * totalValue) / switchTokenData.value),
-        });
+        if (token.id != switchTokenData.id) {
+          buyOrders.push({
+            fromToken: switchTokenData,
+            toToken: token,
+            sendAmount: fixedNum((buyFraction * totalValue) / switchTokenData.value),
+            ordertype: OrderType.SWAP,
+          });
+        }
       }
     });
 

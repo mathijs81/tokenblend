@@ -7,7 +7,6 @@
         <button class="btn btn-primary float-end" @click="execute" v-if="orderVisible">
           Execute
         </button>
-        <button class="btn btn-primary float-end" @click="testdeposit">test deposit</button>
       </div>
       <div class="col">
         <SliderPanel :tokenData="tokenData" v-model="distribution" :withStaking="true" />
@@ -31,7 +30,7 @@ import { web3Service } from '@/web3/web3Service';
 import { asyncComputed } from '@vueuse/core';
 import { BigNumber, FixedNumber } from 'ethers';
 import { defineComponent, ref, Ref, watchEffect } from 'vue';
-import { reduceTokens } from '@/util/stakedTokens';
+import { reduceTokens, wrapDeposits } from '@/util/stakedTokens';
 
 export default defineComponent({
   setup() {
@@ -101,7 +100,11 @@ export default defineComponent({
     const orderDialogVisible = ref(false);
     const orderPlan: Ref<PlannedOrder[]> = ref([]);
     const execute = () => {
-      orderPlan.value = defaultOrderPlanner.createPlan(tokenData.value, distribution.value);
+      console.log(tokenData.value);
+      console.log('stakedUnderlyingValue' in tokenData.value[0]);
+      const plan = defaultOrderPlanner.createPlan(tokenData.value, distribution.value);
+      const withStakingPlan = wrapDeposits(tokenData.value, plan, idleService.supportedSymbols());
+      orderPlan.value = withStakingPlan;
       orderDialogVisible.value = true;
     };
 
@@ -118,18 +121,7 @@ export default defineComponent({
     };
   },
   components: { SliderPanel, OrderPlanDialog },
-  methods: {
-    async testdeposit() {
-      const weth = this.tokenData.find((token) => token.symbol === 'WETH')!;
-      console.log(
-        await idleService.depositToken(
-          weth,
-          web3Service.status().address!,
-          FixedNumber.from(1.0, 18)
-        )
-      );
-    },
-  },
+  methods: {},
 });
 </script>
 

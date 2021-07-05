@@ -1,5 +1,7 @@
 import { TokenData } from './tokens';
 import { FixedNumber } from 'ethers';
+import { OrderType, PlannedOrder } from '@/orderplan/orderplan';
+import { fixedNum } from './numbers';
 
 export interface StakedToken extends TokenData {
   stakedUnderlyingValue: FixedNumber;
@@ -54,5 +56,92 @@ export function reduceTokens(allTokens: TokenData[]): StakedToken[] {
     }
     result.push(newToken);
   }
+  return result;
+}
+
+/**
+ * Check if orderplan can be executed or that we first need to redeem some tokens.
+ *
+ * Also deposit tokens that can be deposited at the end.
+ */
+export function wrapDeposits(
+  tokenList: TokenData[],
+  orderplan: PlannedOrder[],
+  availableSymbols: Set<string>
+): PlannedOrder[] {
+  const result = [...orderplan];
+  const originalTokens = new Map<string, TokenData>();
+  const tokenStatus = new Map<string, TokenData>();
+  tokenList.forEach((token) => {
+    tokenStatus.set(token.id, { ...token });
+    originalTokens.set(token.id, token);
+  });
+
+  const redeemAmounts = new Map<string, FixedNumber>();
+
+  for (const order of orderplan) {
+    const destAmount = order.sendAmount
+      .mulUnsafe(fixedNum(order.fromToken.value))
+      .divUnsafe(fixedNum(order.toToken.value));
+    const from = tokenStatus.get(order.fromToken.id);
+    const to = tokenStatus.get(order.toToken.id);
+    if (!from || !to) {
+      throw new Error(`Token not found? ${order}.`);
+    }
+    from.ownedAmount = from.ownedAmount.subUnsafe(order.sendAmount);
+    to.ownedAmount = to.ownedAmount.addUnsafe(destAmount);
+    if ('stakedUnderlyingValue' in from) {
+      const stakedToken = from as StakedToken;
+      const freeAmount = stakedToken.ownedAmount.subUnsafe(stakedToken.stakedUnderlyingValue);
+      console.log(order.fromToken, freeAmount.toString());
+      if (freeAmount.isNegative()) {
+        const currentlyRedeemed = redeemAmounts.get(stakedToken.id);
+        if (!currentlyRedeemed) {
+          redeemAmounts.set(stakedToken.id, freeAmount.mulUnsafe(fixedNum(-1)));
+        } else {
+          redeemAmounts.set(
+            stakedToken.id,
+            currentlyRedeemed.addUnsafe(freeAmount.mulUnsafe(fixedNum(-1)))
+          );
+        }
+      }
+    }
+  }
+  console.log(redeemAmounts);
+
+  redeemAmounts.forEach((redeemAmount, id) => {
+    const token = originalTokens.get(id);
+    if (!token) {
+      throw new Error('Token not found ${id}');
+    }
+    if (availableSymbols.has(token.symbol)) {
+      result.unshift({
+        fromToken: token,
+        toToken: token,
+        sendAmount: redeemAmount,
+        ordertype: OrderType.REDEEM,
+      });
+    }
+  });
+
+  tokenStatus.forEach((tokenStatus, id) => {
+    if ('stakedUnderlyingValue' in tokenStatus && availableSymbols.has(tokenStatus.symbol)) {
+      const stakedToken = tokenStatus as StakedToken;
+      const freeAmount = stakedToken.ownedAmount.subUnsafe(stakedToken.stakedUnderlyingValue);
+      const originalToken = originalTokens.get(id);
+      if (!originalToken) {
+        throw new Error('Token not found ${id}');
+      }
+      // Only deposit $10 or more
+      if (freeAmount.toUnsafeFloat() * tokenStatus.value > 10) {
+        result.push({
+          fromToken: originalToken,
+          toToken: originalToken,
+          sendAmount: freeAmount,
+          ordertype: OrderType.DEPOSIT,
+        });
+      }
+    }
+  });
   return result;
 }

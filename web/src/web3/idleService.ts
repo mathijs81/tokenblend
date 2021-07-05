@@ -104,7 +104,45 @@ class IdleService {
     console.log(amountBn, amountBn.toString());
     const result = await contract.mintIdleToken(amountBn, true, accountAddress);
     console.log(result);
-    console.log(result.wait());
+    const receipt = await result.wait();
+    console.log(receipt);
+
+    return {
+      message: 'Success',
+      success: true,
+    };
+  }
+  public async redeemToken(
+    token: TokenData,
+    accountAddress: string,
+    amount: FixedNumber
+  ): Promise<TransactionResult> {
+    const symbol = token.symbol;
+    if (!(symbol in idleAddresses)) {
+      throw new Error(`${symbol} not present in idle-supported symbols`);
+    }
+    const contract = this.getContract(symbol, true);
+
+    // Calculate how much we need to redeem using tokenPriceWithFee
+    const priceWithFee: BigNumber = await contract.tokenPriceWithFee(accountAddress);
+    let redeemAmount = fixedToBigNumber(amount.divUnsafe(bigNumberToFixed(priceWithFee, 18)), 18);
+
+    const balance: BigNumber = await contract.balanceOf(accountAddress);
+    if (redeemAmount.gt(balance)) {
+      // If there's more than 10% difference, throw, otherwise just adjust to maximum
+      if (redeemAmount.sub(balance).gt(redeemAmount.div(10))) {
+        throw new Error(
+          `Tried to redeem ${redeemAmount.toString()} (from ${amount.toString()} original), but balance is ${balance.toString()}`
+        );
+      }
+      console.log('Trying to redeem more than balance, adjusting to redeem max balance');
+      redeemAmount = balance;
+    }
+
+    const result = await contract.redeemIdleToken(redeemAmount);
+    console.log(result);
+    const receipt = await result.wait();
+    console.log(receipt);
 
     return {
       message: 'Success',

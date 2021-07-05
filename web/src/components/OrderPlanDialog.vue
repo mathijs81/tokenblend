@@ -18,14 +18,14 @@
       <tbody>
         <template v-for="order in orderList" v-bind:key="order.sendAmount + order.fromToken.name">
           <tr class="align-middle" :class="{ 'table-success': order.success }">
-            <td>{{ order.sendAmount.toString() }}</td>
+            <td>{{ formatMaxDigits(order.sendAmount.toUnsafeFloat()) }}</td>
             <td>
               <img
                 v-if="order.fromToken.logoUri"
                 :src="order.fromToken.logoUri"
                 class="token-img me-2"
               />
-              {{ order.fromToken.name }}
+              {{ fromName(order) }}
             </td>
             <td>=></td>
             <td>
@@ -34,7 +34,7 @@
                 :src="order.toToken.logoUri"
                 class="token-img me-2"
               />
-              {{ order.toToken.name }}
+              {{ toName(order) }}
             </td>
             <td class="text-center">
               <img
@@ -46,13 +46,15 @@
               <i v-else-if="order.success" class="pi pi-check" style="fontsize: 2rem" />
               <span v-else>
                 <button
-                  v-if="!isEnzyme && !order.options"
+                  v-if="!isEnzyme && !order.options && isSwap(order)"
                   class="btn btn-primary me-2"
                   @click="calculateBest(order)"
                 >
                   Options <i class="pi pi-angle-double-down" />
                 </button>
-                <button class="btn btn-primary" @click="execute(order)">Execute best</button>
+                <button class="btn btn-primary" @click="execute(order)">
+                  {{ executeButtonText(order) }}
+                </button>
               </span>
             </td>
           </tr>
@@ -93,8 +95,8 @@
 </template>
 
 <script lang="ts">
-import { PlannedOrder } from '@/orderplan/orderplan';
-import { compareBignumber } from '@/util/numbers';
+import { PlannedOrder, OrderType } from '@/orderplan/orderplan';
+import { compareBignumber, numberMixin } from '@/util/numbers';
 import { ParaSwapPredictedOutput, paraswapService, PredictedOutput } from '@/web3/paraswapService';
 import { TransactionResult, uniswapService } from '@/web3/uniswapService';
 import { extractErrorMessage } from '@/web3/web3Service';
@@ -129,7 +131,10 @@ export default defineComponent({
   setup(props) {
     const orderList: Ref<OrderWithResult[]> = ref([]);
     watchEffect(() => {
-      orderList.value = props.orderPlan.map((order) => ({ ...order }));
+      orderList.value = props.orderPlan.map((order) => ({
+        ...order,
+        chosenPlatform: order.ordertype == OrderType.SWAP ? undefined : 'idle',
+      }));
       console.log(props.orderPlan, orderList.value);
     });
     return { orderList };
@@ -223,7 +228,34 @@ export default defineComponent({
       }
       return result.toString();
     },
+    isSwap(order: PlannedOrder): boolean {
+      return order.ordertype == OrderType.SWAP;
+    },
+    executeButtonText(order: PlannedOrder): string {
+      if (order.ordertype == OrderType.SWAP && !this.isEnzyme) {
+        return 'Execute best';
+      } else {
+        return 'Execute';
+      }
+    },
+    fromName(order: PlannedOrder): string {
+      const name = order.fromToken.name;
+      if (order.ordertype == OrderType.REDEEM) {
+        return 'Idle' + order.fromToken.symbol;
+      } else {
+        return name;
+      }
+    },
+    toName(order: PlannedOrder): string {
+      const name = order.toToken.name;
+      if (order.ordertype == OrderType.DEPOSIT) {
+        return 'Idle' + order.fromToken.symbol;
+      } else {
+        return name;
+      }
+    },
   },
+  mixins: [numberMixin],
 });
 </script>
 
