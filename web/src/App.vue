@@ -4,7 +4,7 @@
       <div class="container">
         <Menubar :model="items">
           <template #start>
-            <router-link to="/" class="logo">Bot</router-link>
+            <router-link to="/" class="logo">TokenBlend</router-link>
           </template>
         </Menubar>
       </div>
