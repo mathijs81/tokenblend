@@ -4,7 +4,7 @@
       <div class="container">
         <Menubar :model="items">
           <template #start>
-            <router-link to="/" class="logo">TokenBlend</router-link>
+            <router-link to="/" class="logo"><img src="@/assets/logo.png" class="img-fluid"> TokenBlend</router-link>
           </template>
         </Menubar>
       </div>
@@ -60,3 +60,9 @@ export default defineComponent({
   },
 });
 </script>
+<style lang="scss" scoped>
+.logo img {
+  width: 2rem;
+  height: 2rem;
+}
+</style>

@@ -4,7 +4,7 @@
       v-model="selectedDistribution"
       :options="distributions"
       optionLabel="name"
-      placeholder="Select distribution"
+      placeholder="Select blend"
     />
 
     <table class="table table-striped table-sm">

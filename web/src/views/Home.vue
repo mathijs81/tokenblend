@@ -1,7 +1,7 @@
 <template>
   <div class="home">
     <div class="hero position-relative text-center p-4">
-      <h1 class="display-1">TokenBlend</h1>
+      <h1 class="display-1"><img src="@/assets/logo.png"> TokenBlend</h1>
       <h2 class="h2">Asset allocation for your Enzyme funds and Ethereum wallet</h2>
     </div>
   </div>
