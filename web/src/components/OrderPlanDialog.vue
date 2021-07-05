@@ -69,7 +69,7 @@
                   <i class="pi pi-spin pi-spinner" />
                 </div>
                 <template v-else>
-                  <div class="col-6 my-auto">{{ formatResult(option) }}</div>
+                  <div class="col-6 my-auto">{{ formatResult(order, option) }}</div>
                   <div class="col-3 my-auto">
                     <button
                       v-if="option.plan"
@@ -96,10 +96,11 @@
 
 <script lang="ts">
 import { PlannedOrder, OrderType } from '@/orderplan/orderplan';
-import { compareBignumber, numberMixin } from '@/util/numbers';
+import { bigNumberToFixed, compareBignumber, formatMaxDigits, numberMixin } from '@/util/numbers';
+import { idleService } from '@/web3/idleService';
 import { ParaSwapPredictedOutput, paraswapService, PredictedOutput } from '@/web3/paraswapService';
 import { TransactionResult, uniswapService } from '@/web3/uniswapService';
-import { extractErrorMessage } from '@/web3/web3Service';
+import { extractErrorMessage, web3Service } from '@/web3/web3Service';
 import { defineComponent, PropType, reactive, ref, Ref, watchEffect } from 'vue';
 
 interface TransactionInProgress {
@@ -151,12 +152,12 @@ export default defineComponent({
       });
       order.options = [uniswapOption, paraswapOption];
       const uniswapOutput = uniswapService.getPredictedOutput(order).then((output) => {
-        console.log(`got ${output.toString()}`);
+        console.log("output uniswap: " , output);
         uniswapOption.inProgress = false;
         uniswapOption.plan = output;
       });
       const paraswapOutput = paraswapService.getPredictedOutput(order).then((output) => {
-        console.log(`got ${output.toString()}`);
+        console.log("output paraswap: " , output);
         paraswapOption.inProgress = false;
         paraswapOption.plan = output;
       });
@@ -179,9 +180,20 @@ export default defineComponent({
       order.inProgress = true;
       order.message = undefined;
       try {
+        const address = web3Service.status().address;
+        if (!address) {
+          throw new Error('connect wallet first');
+        }
+
         let executeFunction: (arg: PlannedOrder) => Promise<TransactionResult>;
         if (this.$props.isEnzyme) {
           executeFunction = (order) => uniswapService.executeForEnzyme(order);
+        } else if (order.ordertype == OrderType.DEPOSIT) {
+          executeFunction = (order) =>
+            idleService.depositToken(order.fromToken, address, order.sendAmount);
+        } else if (order.ordertype == OrderType.REDEEM) {
+          executeFunction = (order) =>
+            idleService.redeemToken(order.fromToken, address, order.sendAmount);
         } else {
           if (platform === undefined) {
             // work on a copy so we keep the UI clean
@@ -221,12 +233,13 @@ export default defineComponent({
     platformLogo(platform: string): string {
       return require('@/assets/' + platform.toLowerCase() + '.png');
     },
-    formatResult(option: Option): string {
+    formatResult(order: PlannedOrder, option: Option): string {
       const result = option.plan?.predictedOutput;
       if (result === undefined) {
         return '---';
       }
-      return result.toString();
+      const fixed = bigNumberToFixed(result, order.toToken.decimals);
+      return order.toToken.symbol + " " + formatMaxDigits(fixed.toUnsafeFloat());
     },
     isSwap(order: PlannedOrder): boolean {
       return order.ordertype == OrderType.SWAP;
