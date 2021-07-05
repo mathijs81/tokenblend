@@ -4,7 +4,9 @@
       <div class="container">
         <Menubar :model="items">
           <template #start>
-            <router-link to="/" class="logo"><img src="@/assets/logo.png" class="img-fluid"> TokenBlend</router-link>
+            <router-link to="/" class="logo"
+              ><img src="@/assets/logo.png" class="img-fluid" /> TokenBlend</router-link
+            >
           </template>
         </Menubar>
       </div>

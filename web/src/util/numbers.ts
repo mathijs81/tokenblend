@@ -14,6 +14,36 @@ function reduceDecimalString(value: string, decimals: number): string {
   return parts[0] + '.' + parts[1].substr(0, decimals);
 }
 
+/**
+ * Make sure amount is lower than balance, as long as it's maximum tolerance x higher.
+ * We frequently try to e.g. sell all tokens and this amount may be dependent on an earlier trade
+ * that may have executed at a less favorable rate than expected.
+ * This will then cause trades to fail because the requested amount is a tiny bit too high, this fixes that.
+ *
+ * The tolerance is there to not just reduce some crazy high amount back to balance, but that we still
+ * get an error then, because probably there's some bug or other problem happening.
+ */
+export function toleranceMin(amount: BigNumber, balance: BigNumber, tolerance = 0.1): BigNumber {
+  if (amount.lte(balance)) {
+    return amount;
+  }
+  // Check if amount is within tolerance
+  const toleranceAmount = fixedToBigNumber(
+    bigNumberToFixed(balance, 18).mulUnsafe(fixedNum(1 + tolerance)),
+    18
+  );
+  if (amount.gt(toleranceAmount)) {
+    throw new Error(`Amount ${amount.toString()} much bigger than balance ${balance.toString()}`);
+  }
+  console.log(
+    `Downwards adjusting number from ${bigNumberToFixed(amount, 18)} to ${bigNumberToFixed(
+      balance,
+      18
+    )}`
+  );
+  return balance;
+}
+
 export function compareFixed(a: FixedNumber, b: FixedNumber): number {
   const bn1 = fixedToBigNumber(a, 18);
   const bn2 = fixedToBigNumber(b, 18);

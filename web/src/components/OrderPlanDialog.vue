@@ -96,7 +96,15 @@
 
 <script lang="ts">
 import { PlannedOrder, OrderType } from '@/orderplan/orderplan';
-import { bigNumberToFixed, compareBignumber, formatMaxDigits, numberMixin } from '@/util/numbers';
+import {
+  bigNumberToFixed,
+  compareBignumber,
+  fixedToBigNumber,
+  formatMaxDigits,
+  numberMixin,
+  toleranceMin,
+} from '@/util/numbers';
+import { getTokenBalance } from '@/util/tokens';
 import { idleService } from '@/web3/idleService';
 import { ParaSwapPredictedOutput, paraswapService, PredictedOutput } from '@/web3/paraswapService';
 import { TransactionResult, uniswapService } from '@/web3/uniswapService';
@@ -142,6 +150,10 @@ export default defineComponent({
   },
   methods: {
     async calculateBest(order: OrderWithResult) {
+      const address = web3Service.status().address;
+      if (!address) {
+        throw new Error('web3 not initialized yet');
+      }
       const uniswapOption: Option = reactive({
         platform: 'Uniswap',
         inProgress: true,
@@ -151,13 +163,14 @@ export default defineComponent({
         inProgress: true,
       });
       order.options = [uniswapOption, paraswapOption];
+      await this.prepareOrder(order, address);
       const uniswapOutput = uniswapService.getPredictedOutput(order).then((output) => {
-        console.log("output uniswap: " , output);
+        console.log('output uniswap: ', output);
         uniswapOption.inProgress = false;
         uniswapOption.plan = output;
       });
       const paraswapOutput = paraswapService.getPredictedOutput(order).then((output) => {
-        console.log("output paraswap: " , output);
+        console.log('output paraswap: ', output);
         paraswapOption.inProgress = false;
         paraswapOption.plan = output;
       });
@@ -195,6 +208,7 @@ export default defineComponent({
           executeFunction = (order) =>
             idleService.redeemToken(order.fromToken, address, order.sendAmount);
         } else {
+          await this.prepareOrder(order, address);
           if (platform === undefined) {
             // work on a copy so we keep the UI clean
             const copy = { ...order };
@@ -239,7 +253,7 @@ export default defineComponent({
         return '---';
       }
       const fixed = bigNumberToFixed(result, order.toToken.decimals);
-      return order.toToken.symbol + " " + formatMaxDigits(fixed.toUnsafeFloat());
+      return order.toToken.symbol + ' ' + formatMaxDigits(fixed.toUnsafeFloat());
     },
     isSwap(order: PlannedOrder): boolean {
       return order.ordertype == OrderType.SWAP;
@@ -266,6 +280,13 @@ export default defineComponent({
       } else {
         return name;
       }
+    },
+    async prepareOrder(order: PlannedOrder, address: string) {
+      // Make sure that the amount wanted is not higher than our balance
+      const balance = await getTokenBalance(order.fromToken.id, address);
+      const amountBn = fixedToBigNumber(order.sendAmount, order.fromToken.decimals);
+      const newAmount = toleranceMin(amountBn, balance);
+      order.sendAmount = bigNumberToFixed(newAmount, order.fromToken.decimals);
     },
   },
   mixins: [numberMixin],

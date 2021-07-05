@@ -3,8 +3,6 @@ import Home from '../views/Home.vue';
 import EnzymeAccount from '../views/EnzymeAccount.vue';
 import WalletAccount from '../views/WalletAccount.vue';
 
-import Uniswap from '../views/Uniswap.vue';
-
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
@@ -21,11 +19,6 @@ const routes: Array<RouteRecordRaw> = [
     path: '/wallet',
     name: 'WalletAccount',
     component: WalletAccount,
-  },
-  {
-    path: '/uniswap',
-    name: 'Uniswap',
-    component: Uniswap,
   },
 ];
 

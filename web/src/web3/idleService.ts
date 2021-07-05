@@ -1,4 +1,4 @@
-import { bigNumberToFixed, fixedToBigNumber, formatMaxDigits } from '@/util/numbers';
+import { bigNumberToFixed, fixedToBigNumber, formatMaxDigits, toleranceMin } from '@/util/numbers';
 import { StakedToken } from '@/util/stakedTokens';
 import { getTokenAllowance, getTokenBalance, tokenApprove, TokenData } from '@/util/tokens';
 import { BigNumber, Contract, FixedNumber, utils } from 'ethers';
@@ -101,8 +101,11 @@ class IdleService {
       const ok = await tokenApprove(token.id, contractAddress, unlimitedAllowance);
       console.log('token approve: ' + ok);
     }
-    console.log(amountBn, amountBn.toString());
-    const result = await contract.mintIdleToken(amountBn, true, accountAddress);
+
+    const balance = await getTokenBalance(token.id, accountAddress);
+    const finalAmount = toleranceMin(amountBn, balance);
+
+    const result = await contract.mintIdleToken(finalAmount, true, accountAddress);
     console.log(result);
     const receipt = await result.wait();
     console.log(receipt);
@@ -128,16 +131,7 @@ class IdleService {
     let redeemAmount = fixedToBigNumber(amount.divUnsafe(bigNumberToFixed(priceWithFee, 18)), 18);
 
     const balance: BigNumber = await contract.balanceOf(accountAddress);
-    if (redeemAmount.gt(balance)) {
-      // If there's more than 10% difference, throw, otherwise just adjust to maximum
-      if (redeemAmount.sub(balance).gt(redeemAmount.div(10))) {
-        throw new Error(
-          `Tried to redeem ${redeemAmount.toString()} (from ${amount.toString()} original), but balance is ${balance.toString()}`
-        );
-      }
-      console.log('Trying to redeem more than balance, adjusting to redeem max balance');
-      redeemAmount = balance;
-    }
+    redeemAmount = toleranceMin(redeemAmount, balance);
 
     const result = await contract.redeemIdleToken(redeemAmount);
     console.log(result);
