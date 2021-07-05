@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export async function getGasPrice(maxWait: number) {
+export async function getGasPrice(maxWait: number): Promise<number> {
   try {
     const response = await axios.get('https://ethgasstation.info/json/ethgasAPI.json');
     const data = response.data.gasPriceRange;

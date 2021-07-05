@@ -16,6 +16,7 @@ import SliderPanel from '@/components/SliderPanel.vue';
 import { getTokens } from '@/data/enzymegraph';
 import { defaultOrderPlanner, PlannedOrder } from '@/orderplan/orderplan';
 import { calcSliderChangeResult } from '@/util/sliderUtil';
+import { fetchTokens } from '@/util/tokenlist';
 import { calcPercentageMap, TokenData } from '@/util/tokens';
 import { enzymeService, Fund } from '@/web3/enzymeService';
 import { Provider, web3Service } from '@/web3/web3Service';
@@ -50,6 +51,9 @@ export default defineComponent({
     // there are very many tokens listed.
     const partialTokens: Ref<TokenData[]> = asyncComputed(async () => {
       const tokenRequestResult = await getTokens(web3Service.isMainnet());
+      const tokenInfoMap = new Map(
+        (await fetchTokens()).map((token) => [token.address.toLowerCase(), token])
+      );
       const asTokenData: TokenData[] = tokenRequestResult.assets
         // not sure why, the bot example code also filters for this
         .filter((asset) => !asset.derivativeType)
@@ -60,6 +64,9 @@ export default defineComponent({
           value: parseFloat(asset.price?.price ?? '-1'),
           ownedAmount: FixedNumber.from('0'),
           decimals: asset.decimals,
+          logoUri:
+            tokenInfoMap.get(asset.id.toLowerCase())?.logoURI ??
+            `https://cryptoicon-api.vercel.app/api/icon/${asset.symbol.toLowerCase()}`,
         }));
       return asTokenData;
     });

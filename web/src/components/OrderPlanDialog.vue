@@ -235,7 +235,7 @@ export default defineComponent({
         }
         const result = await executeFunction(order);
         Object.assign(order, result);
-      } catch (error: any) {
+      } catch (error) {
         console.log(error);
         let message = extractErrorMessage(error);
         order.success = false;

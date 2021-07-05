@@ -86,7 +86,6 @@ export default defineComponent({
 
     const funds = computed(() => enzymeService.getFunds());
     const selectFund = (fund: Fund) => enzymeService.selectFund(fund);
-    const extraText = ref('');
 
     watchEffect(async () => {
       const fund = enzymeService.status().selectedFund;
