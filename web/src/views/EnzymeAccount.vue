@@ -7,7 +7,7 @@
       <div class="col">
         <EnzymeSliders />
       </div>
-      <div class="col">
+      <div class="col" v-if="showFarming">
         <FarmingStrategy />
       </div>
     </div>
@@ -20,6 +20,7 @@ import { enzymeService } from '@/web3/enzymeService';
 import { computed, defineComponent, watchEffect } from 'vue';
 import EnzymeSliders from './EnzymeSliders.vue';
 import FarmingStrategy from './FarmingStrategy.vue';
+import { useRoute } from 'vue-router';
 
 export default defineComponent({
   props: {
@@ -38,7 +39,10 @@ export default defineComponent({
         }
       }
     });
-    return { fund: computed(() => enzymeService.status().selectedFund) };
+    return {
+      fund: computed(() => enzymeService.status().selectedFund),
+      showFarming: useRoute().query.farming ?? false,
+    };
   },
   components: { EnzymeSliders, FarmingStrategy },
 });
