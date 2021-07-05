@@ -28,11 +28,12 @@
         </tr>
 
         <tr v-for="token in tokenData" v-bind:key="token.name" class="align-middle">
-          <td>
-            <img v-if="token.logoUri" :src="token.logoUri" class="token-img me-2" /><a
-              :title="token.id"
-              >{{ token.name }}</a
-            >
+          <td class="d-flex align-items-center">
+            <img v-if="token.logoUri" :src="token.logoUri" class="token-img me-2" />
+            <div :title="token.id">
+              <div>{{ token.name }}</div>
+              <pre class="mb-0">{{ token.symbol }}</pre>
+            </div>
           </td>
           <td :title="formatPriceLong(token)" class="text-end">{{ formatPrice(token) }}</td>
           <td class="text-end" :title="tokenTitle(token)">

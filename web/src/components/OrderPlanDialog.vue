@@ -27,7 +27,7 @@
               />
               {{ fromName(order) }}
             </td>
-            <td>=></td>
+            <td>➜</td>
             <td>
               <img
                 v-if="order.toToken.logoUri"

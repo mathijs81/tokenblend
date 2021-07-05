@@ -5,6 +5,23 @@ export interface Distribution {
   map: Record<string, number>;
 }
 
+const lending = {
+  AAVE: 10.7,
+  MKR: 7,
+  COMP: 6.7,
+  UNI: 5.6,
+  YFI: 3,
+  SNX: 1,
+} as { [key: string]: number };
+
+const dexes = {
+  CRV: 8.3,
+  UNI: 5.6,
+  BNT: 1.2,
+  '1INCH': 0.035,
+  GNO: 0.021,
+} as { [key: string]: number };
+
 /*
  TODO: add more interesting distributions eg market cap weighted
  */
@@ -29,5 +46,18 @@ export async function getDistributions(token: TokenData[]): Promise<Distribution
     map: filteredMap,
   };
 
-  return [equalWeighted, filtered];
+  const lendingMap: Record<string, number> = {};
+  token.forEach((t) => {
+    lendingMap[t.id] = lending[t.symbol] ?? 0.0;
+  });
+  const dexesMap: Record<string, number> = {};
+  token.forEach((t) => {
+    dexesMap[t.id] = dexes[t.symbol] ?? 0.0;
+  });
+  return [
+    equalWeighted,
+    filtered,
+    { name: 'Lending', map: lendingMap },
+    { name: 'Dexes', map: dexesMap },
+  ];
 }
