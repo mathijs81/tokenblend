@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
+import { createRouter, createWebHashHistory, createWebHistory, RouteRecordRaw } from 'vue-router';
 import Home from '../views/Home.vue';
 import EnzymeAccount from '../views/EnzymeAccount.vue';
 import WalletAccount from '../views/WalletAccount.vue';
@@ -23,7 +23,9 @@ const routes: Array<RouteRecordRaw> = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(process.env.BASE_URL),
+  // Disabled web history because we run on github pages.
+  //createWebHistory(process.env.BASE_URL),
+  history: createWebHashHistory(),
   routes,
 });
 
