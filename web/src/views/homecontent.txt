@@ -1,10 +1,4 @@
-# TokenBlend
-
-## Asset allocation for your Enzyme funds and Ethereum wallet
-
-This is an entry for the hack.money hackathon 2021.
-
-With this dApp you can perform token asset allocation on either a native Ethereum wallet or an Enzyme vault.
+Use this dApp to perform token asset allocation on either a native Ethereum wallet or an Enzyme vault.
 
 Current features implemented:
 
@@ -15,14 +9,6 @@ Current features implemented:
 
 [ETHGlobal showcase page for TokenBlend](https://showcase.ethglobal.co/hackmoney2021/tokenblend)
 
-[Live demo](https://mathijs81.github.io/tokenblend)
-
 ## Demo video
 
 [![Demo video](https://img.youtube.com/vi/qcvPBpOk3f0/0.jpg)](https://www.youtube.com/watch?v=qcvPBpOk3f0)
-
-## How to run/develop
-
-See the source in the `web/` subdirectory for the dApp. The `blockchain/` directory contains utilities to run a hardhat fork of mainnet locally to easily test
-uniswap and idle.
-

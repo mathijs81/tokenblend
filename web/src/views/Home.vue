@@ -1,17 +1,31 @@
 <template>
   <div class="home">
-    <div class="hero position-relative text-center p-4">
+    <div class="hero position-relative text-center p-2">
       <h1 class="display-1"><img src="@/assets/logo.png" /> TokenBlend</h1>
       <h2 class="h2">Asset allocation for your Enzyme funds and Ethereum wallet</h2>
+    </div>
+    <div v-html="content" class="py-2"></div>
+    <router-link :to="{ name: 'WalletAccount' }" class="btn btn-primary my-2"
+      >Open your account</router-link
+    >
+    <div class="footer py-4">
+      <!-- nothing yet -->
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import marked from 'marked';
+import contentMd from '!raw-loader!./homecontent.txt';
 
 export default defineComponent({
   name: 'Home',
+  setup() {
+    return {
+      content: marked(contentMd),
+    };
+  },
 });
 </script>
 
