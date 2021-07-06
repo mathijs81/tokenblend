@@ -2,7 +2,7 @@
   <div>
     <div v-if="status.initializing" class="text-center">Connecting...</div>
     <div v-else-if="!status.connected" class="d-flex flex-column align-items-center">
-      <img src="/mm-logo.svg" class="p-2" />
+      <img :src="publicPath + 'mm-logo.svg'" class="p-2" />
       <p class="pt-2 mb-0">You need to connect your Metamask wallet to continue.</p>
       <a class="btn btn-link mb-5" target="_blank" href="https://metamask.io/download.html"
         >Get metamask</a
@@ -30,6 +30,7 @@ export default defineComponent({
     return {
       status,
       connect,
+      publicPath: process.env.BASE_URL,
     };
   },
 });
