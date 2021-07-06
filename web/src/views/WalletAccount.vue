@@ -29,12 +29,13 @@
     </div>
     <OrderPlanDialog v-model:visible="orderDialogVisible" :orderPlan="orderPlan" />
   </div>
-  <div v-else>Loading...</div>
+  <Web3Info v-else />
 </template>
 
 <script lang="ts">
 import OrderPlanDialog from '@/components/OrderPlanDialog.vue';
 import SliderPanel from '@/components/SliderPanel.vue';
+import Web3Info from '@/components/Web3Info.vue';
 import { defaultOrderPlanner, PlannedOrder } from '@/orderplan/orderplan';
 import { calcSliderChangeResult } from '@/util/sliderUtil';
 import { fetchTokens } from '@/util/tokenlist';
@@ -141,7 +142,7 @@ export default defineComponent({
       noFunds,
     };
   },
-  components: { SliderPanel, OrderPlanDialog },
+  components: { SliderPanel, OrderPlanDialog, Web3Info },
   methods: {},
 });
 </script>

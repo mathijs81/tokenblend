@@ -31,12 +31,16 @@ async function getProvider(): Promise<ExternalProvider> {
     await provider.request!({ method: 'eth_requestAccounts' });
   } catch (err) {
     console.log(err);
+    if (err.message && err.message.includes('rejected')) {
+      throw err;
+    }
     // Try ethereum.enable as fallback
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (provider as unknown as any).enable();
+      await (provider as unknown as any).enable();
     } catch (err) {
       console.log("enable also didn't work", err);
+      throw err;
     }
   }
   return provider;
@@ -45,6 +49,8 @@ async function getProvider(): Promise<ExternalProvider> {
 export interface Web3Status {
   initializing: boolean;
   connected?: boolean;
+  providerPresent: boolean;
+  lastErrorMessage?: string;
   network?: string;
   chainId?: number;
   address?: string;
@@ -57,6 +63,7 @@ class Web3Service {
   private signer?: Signer;
   private state: Web3Status = reactive({
     initializing: true,
+    providerPresent: false,
   }) as Web3Status;
   private copy = readonly(this.state);
   private intervalHandler?: number;
@@ -91,6 +98,7 @@ class Web3Service {
 
   private async updateData() {
     if (this.provider !== undefined) {
+      this.state.providerPresent = true;
       try {
         await this.provider.getBlock('latest');
       } catch (err) {
@@ -114,6 +122,7 @@ class Web3Service {
         this.state.balance = utils.formatEther(await this.provider.getBalance(accounts[0]));
       }
     } else {
+      this.state.providerPresent = false;
       console.log('no web3');
     }
   }
@@ -122,6 +131,7 @@ class Web3Service {
     if (!this.state.connected) {
       this.state.initializing = true;
     }
+    this.state.lastErrorMessage = undefined;
     return getProvider()
       .then(async (externalProvider) => {
         this.externalProvider = externalProvider;
@@ -131,10 +141,11 @@ class Web3Service {
         if (this.intervalHandler === undefined) {
           this.intervalHandler = window.setInterval(() => this.updateData(), 2000);
         }
-        this.updateData();
+        await this.updateData();
       })
       .catch((error) => {
         console.log(error);
+        this.state.lastErrorMessage = error.message;
         if (errorCallback) {
           errorCallback(error.message);
         }
