@@ -33,7 +33,7 @@ specifiers:
   graphql-tag: ^2.12.4
   marked: ^2.1.3
   node-sass: ^4.12.0
-  paraswap: ^4.19.1
+  paraswap: ^4.20.0
   prettier: ^2.2.1
   primeicons: ^4.1.0
   primevue: ^3.5.1
@@ -58,7 +58,7 @@ dependencies:
   graphql-request: 3.4.0_graphql@15.5.1
   graphql-tag: 2.12.4_graphql@15.5.1
   marked: 2.1.3
-  paraswap: 4.19.1_typescript@4.3.5
+  paraswap: 4.20.0_typescript@4.3.5
   primeicons: 4.1.0
   primevue: 3.5.1
   simple-uniswap-sdk: 2.5.0
@@ -2563,6 +2563,11 @@ packages:
   /@types/json-schema/7.0.7:
     resolution: {integrity: sha512-cxWFQVseBm6O9Gbw1IWb8r6OS4OhSt3hPZLkFApLjM8TEXROBuQGLAH2i2gZpcXdLBIrpXuTDhH7Vbm1iXmNGA==}
     dev: true
+
+  /@types/json-schema/7.0.8:
+    resolution: {integrity: sha512-YSBPTLTVm2e2OoQIDYx8HaeWJ5tTToLH67kXR7zYNGupXMEHa2++G8k+DczX2cFVgalypqtyZIcU19AFcmOpmg==}
+    dev: true
+    optional: true
 
   /@types/json-stable-stringify/1.0.32:
     resolution: {integrity: sha512-q9Q6+eUEGwQkv4Sbst3J4PNgDOvpuVuKj79Hl/qnmBMEIPzB5QoFRUtjcgcg2xNUZyYUGXBk5wYIBKHt0A+Mxw==}
@@ -6675,6 +6680,19 @@ packages:
     peerDependenciesMeta:
       debug:
         optional: true
+    dev: false
+
+  /follow-redirects/1.14.1_debug@4.3.1:
+    resolution: {integrity: sha512-HWqDgT7ZEkqRzBvc2s64vSZ/hfOceEol3ac/7tKwzuvEyWx3/4UegXh5oBOIotkGsObyk3xznnSRVADBgWSQVg==}
+    engines: {node: '>=4.0'}
+    peerDependencies:
+      debug: '*'
+    peerDependenciesMeta:
+      debug:
+        optional: true
+    dependencies:
+      debug: 4.3.1
+    dev: true
 
   /for-in/1.0.2:
     resolution: {integrity: sha1-gQaNKVqBQuwKxybG4iAMMPttXoA=}
@@ -6707,7 +6725,7 @@ packages:
     engines: {node: '>=10', yarn: '>=1.0.0'}
     dependencies:
       '@babel/code-frame': 7.14.5
-      '@types/json-schema': 7.0.7
+      '@types/json-schema': 7.0.8
       chalk: 4.1.1
       cosmiconfig: 6.0.0
       deepmerge: 4.2.2
@@ -7465,7 +7483,7 @@ packages:
     engines: {node: '>=8.0.0'}
     dependencies:
       eventemitter3: 4.0.7
-      follow-redirects: 1.14.1
+      follow-redirects: 1.14.1_debug@4.3.1
       requires-port: 1.0.0
     transitivePeerDependencies:
       - debug
@@ -9665,8 +9683,8 @@ packages:
       tslib: 2.2.0
     dev: true
 
-  /paraswap/4.19.1_typescript@4.3.5:
-    resolution: {integrity: sha512-hui+rQmHcC/NStpLm9ODo7b5xraPmE5N4PKQ+Kc3wwqP/LbFj3/JI2wD77YfNKfflzU1lbukX6/ba4XuhZv7wg==}
+  /paraswap/4.20.0_typescript@4.3.5:
+    resolution: {integrity: sha512-adprOrnarfWozdrYywPrMZb/XjuNbzVFGIe3p402Sza83FZBWPFcnI+AY7R4vjRt8wRv/FipxJL3Pb00v3+cxw==}
     dependencies:
       '@0x/utils': 4.5.2
       async: 3.2.0
@@ -11058,7 +11076,7 @@ packages:
     resolution: {integrity: sha512-0ilKFI6QQF5nxDZLFn2dMjvc4hjg/Wkg7rHd3jK6/A4a1Hl9VFdQWvgB1UMGoU94pad1P/8N7fMcEnLnSiju8A==}
     engines: {node: '>= 8.9.0'}
     dependencies:
-      '@types/json-schema': 7.0.7
+      '@types/json-schema': 7.0.8
       ajv: 6.12.6
       ajv-keywords: 3.5.2_ajv@6.12.6
     dev: true
