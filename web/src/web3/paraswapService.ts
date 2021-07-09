@@ -73,12 +73,14 @@ class ParaswapService {
         console.log('allowance tx receipt', receipt);
       }
     }
+    // Reduce minimum output that we want by 0.5% for slippage
+    const minAmount = plan.predictedOutput.sub(plan.predictedOutput.div(200));
 
     const tx = await paraSwap.buildTx(
       order.fromToken.id,
       order.toToken.id,
       sendBn.toString(),
-      plan.predictedOutput.toString(),
+      minAmount.toString(),
       plan.priceRoute,
       address,
       this.referrer,
