@@ -70,7 +70,6 @@ class UniswapService {
         // you can only support the v3 enum same works if you only want v2 quotes
         // if you do not supply anything it query both v2 and v3
         uniswapVersions: versions,
-        useWETHAsERC20Route: true,
       }),
     });
     const factory = await uniswapPair.createFactory();
