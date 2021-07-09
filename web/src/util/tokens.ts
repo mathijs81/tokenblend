@@ -1,5 +1,5 @@
 import { web3Service } from '@/web3/web3Service';
-import { BigNumber, Contract, FixedNumber } from 'ethers';
+import { BigNumber, Contract, FixedNumber, ethers } from 'ethers';
 
 export interface TokenData {
   id: string;
@@ -55,7 +55,7 @@ export async function tokenApprove(
   tokenAddress: string,
   spenderAddress: string,
   amount: BigNumber
-): Promise<boolean> {
+): Promise<ethers.ContractTransaction> {
   const signer = web3Service.getSigner();
   const abi = ['function approve(address spender, uint256 amount) external returns (bool)'];
   const contract = new Contract(tokenAddress, abi, signer);

@@ -99,7 +99,9 @@ class IdleService {
       // TODO: something smarter / better than unlimited approval
       const unlimitedAllowance = BigNumber.from(2).pow(256).sub(1);
       const ok = await tokenApprove(token.id, contractAddress, unlimitedAllowance);
-      console.log('token approve: ' + ok);
+      console.log('token approve', ok);
+      const receipt = await ok.wait();
+      console.log('token approve receipt', receipt);
     }
 
     const balance = await getTokenBalance(token.id, accountAddress);
