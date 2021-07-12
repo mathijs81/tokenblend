@@ -22,6 +22,10 @@ jobs:
         run: npm run codegen;npm run build
         working-directory: web
 
+      - name: inject-analytics
+        run: misc/apply.sh dist/index.html
+        working-directory: web
+
       - name: deploy (repo)
         uses: JamesIves/github-pages-deploy-action@4.1.4
         with:
